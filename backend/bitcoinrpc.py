@@ -4,7 +4,7 @@ rpc = ServiceProxy('http://un:pw@127.0.0.1:8332')
 
 def create_account(username):
     """
-    Creates a new account for the given username, returns the new address
+    Creates a new account for the given username, returns the new address.
     """
     
     if rpc.listaccounts().get('username'):
