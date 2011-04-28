@@ -66,13 +66,13 @@ TEMPLATE_LOADERS = (
 )
 
 MIDDLEWARE_CLASSES = (
+    'webservice_tools.middleware.exception.WebServiceException',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'webservice_tools.middleware.response.ProvideResponse',
     'webservice_tools.logging.middleware.LoggingMiddleware',
-    'webservice_tools.middleware.exception.WebServiceException',
     'django.middleware.transaction.TransactionMiddleware',
  
 )
@@ -91,7 +91,6 @@ for root, dirs, files in os.walk(PROJECT_PATH):
         if 'templates' in dirs:
             TEMPLATE_DIRS += (os.path.join(root, 'templates'),)
 
-PISTON_DISPLAY_ERRORS = True
 
 INSTALLED_APPS = (
     'django.contrib.auth',
@@ -102,6 +101,8 @@ INSTALLED_APPS = (
     'webservice_tools',
     'webservice_tools.apps.user',
     'south',
+    'btcblackjack',
+    'backend',
     'piston',
     'django.contrib.admin',
 )
