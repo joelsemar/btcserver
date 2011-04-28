@@ -8,3 +8,4 @@ CARD_CHOICES = [('%s of %s' % (value, suite), '%s of %s' % (value.title(), suite
 
 
 NUM_SEATS = 5
+HAND_TYPE_CHOICES = (('blackjack', 'Black Jack'), ('holdem', 'Texas Hold em'))

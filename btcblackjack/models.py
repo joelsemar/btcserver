@@ -18,7 +18,7 @@ class BlackJackTable(Table):
 
 class Seat(models.Model):
     position = models.PositiveIntegerField()
-    table = models.ForeignKey(Table)
+    table = models.ForeignKey(BlackJackTable)
     player = models.ForeignKey(Player, null=True)
     
     
@@ -33,7 +33,7 @@ class Hand(models.Model):
     
 class Round(models.Model):
     table = models.ForeignKey(Table)
-    dealers_hand = models.ForeignKey(BlackJackHand)
+    dealers_hand = models.ForeignKey(Hand)
 
 
     
@@ -41,7 +41,7 @@ class Round(models.Model):
 class Bet(models.Model):
     game = models.ForeignKey(Round)
     amount = models.DecimalField(max_digits=8, decimal_places=2)
-    players_hand = models.ForeignKey(BlackJackHand)
+    players_hand = models.ForeignKey(Hand)
     score = models.PositiveIntegerField()
     player = models.ForeignKey(Player)
         
