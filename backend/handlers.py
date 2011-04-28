@@ -1,5 +1,5 @@
 from webservice_tools.apps.user.handlers import GenericUserHandler
-from btcserver.models import Player
+from backend.models import Player
 
 
 class UserHandler(GenericUserHandler):
