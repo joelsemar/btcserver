@@ -51,11 +51,11 @@ class JSONRPCException(Exception):
         
 class AuthServiceProxy(object):
     def __init__(self, serviceURL, serviceName=None):
-	self.__serviceURL = serviceURL
+        self.__serviceURL = serviceURL
         self.__serviceName = serviceName
-	self.__url = urlparse.urlparse(serviceURL)
-	if self.__url.port is None:
-		port = 80
+	    self.__url = urlparse.urlparse(serviceURL)
+	   if self.__url.port is None:
+	       port = 80
 	else:
 		port = self.__url.port
 	self.__idcnt = 0

@@ -11,7 +11,7 @@ MANAGERS = ADMINS
 SERVER_NAME = 'btcserver'
 DATABASES = {
     'default': {
-        'ENGINE': 'postgresql_psycopg2', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+        'ENGINE': 'django.db.backends.postgresql_psycopg2', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
         'NAME': SERVER_NAME,                      # Or path to database file if using sqlite3.
         'USER': SERVER_NAME,                      # Not used with sqlite3.
         'PASSWORD': SERVER_NAME,                  # Not used with sqlite3.
