@@ -15,12 +15,15 @@ class BlackJackTable(Table):
             for p in range(consts.NUM_SEATS + 1):
                 Seat.objects.create(position=p, table=self)
         super(Table, self).save(*args, **kwargs)
+    
+    class Meta:
+        abstract = False
 
 class Seat(models.Model):
     position = models.PositiveIntegerField()
     table = models.ForeignKey(BlackJackTable)
     player = models.ForeignKey(Player, null=True)
-    
+     
     
 class Hand(models.Model):
     cards = models.ManyToManyField(Card, symmetrical=False)
