@@ -1,7 +1,7 @@
 from django.conf.urls.defaults import patterns, include, url
 from webservice_tools.apps.user.handlers import LoginHandler 
 from webservice_tools import urls as service_urls
-from btcserver.handlers import  UserHandler
+from backend.handlers import  UserHandler
 from webservice_tools.utils import Resource
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
