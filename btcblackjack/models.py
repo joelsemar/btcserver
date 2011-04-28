@@ -35,7 +35,7 @@ class Hand(models.Model):
     
     
 class Round(models.Model):
-    table = models.ForeignKey(Table)
+    table = models.ForeignKey(BlackJackTable)
     dealers_hand = models.ForeignKey(Hand)
 
 
