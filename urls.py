@@ -1,5 +1,4 @@
 from django.conf.urls.defaults import patterns, include, url
-from webservice_tools.apps.user import urls as user_urls
 from webservice_tools.apps.user.handlers import LoginHandler 
 from webserice_tools import urls as service_urls
 from btcserver.handlers import  UserHandler
