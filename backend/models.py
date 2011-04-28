@@ -37,5 +37,5 @@ class Player(BaseProfile):
     
     
 class Card(models.Model):
-    name = models.CharField(choices=consts.CARD_CHOICES)
+    name = models.CharField(max_length=15,choices=consts.CARD_CHOICES)
     value = models.PositiveIntegerField()
