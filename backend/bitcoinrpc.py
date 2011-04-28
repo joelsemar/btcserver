@@ -19,10 +19,10 @@ def get_address(username):
 def get_balance(username):
     return rpc.getbalance(username)
 
-def credit(amount, address):
-    return rpc.move(MAIN_ACCOUNT, address, amount)
+def credit(amount, username):
+    return rpc.move(MAIN_ACCOUNT, username, amount)
 
-def debit(amount, address):
-    return rpc.move(address, MAIN_ACCOUNT, amount)
+def debit(amount, username):
+    return rpc.move(username, MAIN_ACCOUNT, amount)
 
     
