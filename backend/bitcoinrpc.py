@@ -1,4 +1,4 @@
-from jsonrpc import ServiceProxy
+from backend.jsonrpc import ServiceProxy
 MAIN_ACCOUNT = 'main'
 rpc = ServiceProxy('http://un:pw@127.0.0.1:8332')
 
