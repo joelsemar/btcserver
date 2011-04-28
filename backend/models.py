@@ -14,7 +14,7 @@ class Table(models.Model):
 class Player(BaseProfile):
     show_animations = models.BooleanField(default=True)
     payout_address = models.CharField(max_length=64)
-    username = models.CharField(unique=True, max_length=512)
+    username = models.CharField(unique=True, max_length=512, blank=True)
     
     
     def save(self, *args, **kwargs):
