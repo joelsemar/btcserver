@@ -24,7 +24,7 @@ class Player(BaseProfile):
         
         
     def create_callback(self):
-        bitcoinrpc.create_account(self.user.account_name)
+        bitcoinrpc.create_account(self.account_name)
         
     
     @property    
