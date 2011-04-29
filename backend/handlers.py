@@ -3,6 +3,6 @@ from backend.models import Player
 
 
 class UserHandler(GenericUserHandler):
-    extra_fields = ('balance',)
+    extra_fields = ('balance', 'address')
     model = Player
         
