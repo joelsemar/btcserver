@@ -1,4 +1,5 @@
 from backend.jsonrpc import ServiceProxy
+
 MAIN_ACCOUNT = 'main'
 rpc = ServiceProxy('http://un:pw@127.0.0.1:8332')
 
@@ -13,16 +14,17 @@ def create_account(username):
     return rpc.getnewaddress(username)
 
 
-def get_address(username):
-    return rpc.getaccountaddress(username)
+def get_address(account_name):
+    return rpc.getaccountaddress(account_name)
 
-def get_balance(username):
-    return rpc.getbalance(username)
+def get_balance(account_name):
+    return rpc.getbalance(account_name)
 
-def credit(amount, username):
-    return rpc.move(MAIN_ACCOUNT, username, amount)
+def credit(amount, account_name):
+    return rpc.move(MAIN_ACCOUNT, account_name, amount)
 
-def debit(amount, username):
-    return rpc.move(username, MAIN_ACCOUNT, amount)
+def debit(amount, account_name):
+    return rpc.move(account_name, MAIN_ACCOUNT, amount)
 
-    
+def send(account_name, to_address, amount):
+    return rpc.sendfrom(account_name, to_address, amount)
