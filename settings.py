@@ -4,7 +4,7 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
-    ('me', 'semarjt@gmail.com') ,('Your Name', 'your_email@domain.com'),
+    #('me', ' ') ,('Your Name', 'your_email@domain.com'),
 )
 
 MANAGERS = ADMINS
@@ -109,7 +109,7 @@ INSTALLED_APPS = (
 
 
 PROJECT_PATH = os.path.realpath(os.path.dirname(__file__))
-AUTH_PROFILE_MODULE = 'btcserver.UserProfile' 
+AUTH_PROFILE_MODULE = 'backend.Player' 
 import logging.handlers
 LOG_FILE = '%s/logs/log' % PROJECT_PATH
 GLOBAL_LOG_LEVEL = logging.DEBUG
