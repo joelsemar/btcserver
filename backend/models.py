@@ -18,7 +18,7 @@ class Player(BaseProfile):
     
     
     def save(self, *args, **kwargs):
-        if self.user.username != self.username:
+        if self.user.username != self.account_name:
             self.account_name = self.user.username
         super(Player, self).save(*args, **kwargs)
         
