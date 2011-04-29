@@ -55,7 +55,7 @@ class Player(BaseProfile):
         raises InvaldOperation
         """
         amount = Decimal(str(amount))
-        if amount >= self.balance:
+        if amount <= self.balance:
             bitcoinrpc.send(self.account_name, self.payout_address, Decimal(str(amount)))
             
             
