@@ -39,24 +39,24 @@ class Player(BaseProfile):
         """
         raises InvalidOperation
         """
-        amount = Decimal(str(amount))
-        bitcoinrpc.credit(amount, self.account_name)
+        assert isinstance(amount, Decimal)
+        bitcoinrpc.credit(str(amount), self.account_name)
     
     def debit(self, amount):
         """
         raises InvalidOperation
         """
-        amount = Decimal(str(amount))
-        bitcoinrpc.debit(amount, self.account_name)
+        assert isinstance(amount, Decimal)
+        bitcoinrpc.debit(str(amount), self.account_name)
         
     
     def withdraw(self, amount):
         """
         raises InvaldOperation
         """
-        amount = Decimal(str(amount))
+        amount = float(amount)
         if amount <= self.balance:
-            bitcoinrpc.send(self.account_name, self.payout_address, Decimal(str(amount)))
+            bitcoinrpc.send(self.account_name, self.payout_address, amount)
             
             
 class Card(models.Model):
