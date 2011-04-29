@@ -1,0 +1,17 @@
+<!Doctype HTML>
+<html>
+	<head>
+		<title>Bitcoin Palace</title>
+		<link rel="icon" 
+      type="image/png" 
+      href="/static/images/favicon.ico">
+	  <style type='text/css'>
+	  	body{
+	  		background-color: #4c4b49;
+	  	}
+	  </style>
+	</head>
+	<body>
+		<img src='/static/images/bg_1.jpg' style='width:100%;height:100%;margin:0 auto;'></img>
+	</body>
+</html>
