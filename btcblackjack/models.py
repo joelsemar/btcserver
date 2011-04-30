@@ -2,9 +2,13 @@ import consts
 from django.db import models
 from backend.models import BaseBet, Card, Player, Table
 
-class BlackJackTable(Table):
+class BlackJackTableType(models.Model):
     low_bet = models.DecimalField(max_digits=8, decimal_places=2)
     high_bet = models.DecimalField(max_digits=8, decimal_places=2)
+
+
+class BlackJackTable(Table):
+    type = models.ForeignKey(BlackJackTableType)
     
     def __unicode__(self):
         return '%s: %s - %s' % (self.name, self.low_bet, self.high_bet)
@@ -37,5 +41,3 @@ class BlackJackBet(BaseBet):
     def busted(self):
         return self.score > 21
 
-
-    

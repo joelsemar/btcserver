@@ -21,9 +21,12 @@ class Table(models.Model):
         return  Seat.objects.filter(table=self).count()
 
     @property
-    def seats_available(self):
-        seats = Seat.objects.filter(table=self)
-        return len([s.player for s in seats if s.player])
+    def available_seats(self):
+        return Seat.objects.filter(table=self, player=None)
+    
+    @property
+    def num_available_seats(self):
+        return len(self.available_seats)
         
 
 class Player(BaseProfile):

@@ -3,6 +3,7 @@ from webservice_tools.apps.user.handlers import LoginHandler
 from webservice_tools import urls as service_urls
 from backend.handlers import  UserHandler, AccountWithdrawalHandler
 from webservice_tools.utils import Resource
+from btcblackjack import urls as blackjack_urls
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
 # admin.autodiscover()
@@ -12,6 +13,7 @@ urlpatterns = patterns('',
     url(r'^user/?$', Resource(UserHandler)),
     url(r'^login/?$', Resource(LoginHandler)),
     url(r'^withdrawal/?$', Resource(AccountWithdrawalHandler)),
+    url(r'^blackjack/', include(blackjack_urls)), 
     
     # Examples:
     # url(r'^$', 'btcblackjack.views.home', name='home'),
