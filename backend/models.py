@@ -14,7 +14,7 @@ class Table(models.Model):
     def save(self, *args, **kwargs):
         need_seats = False
         if not self.id:
-            need_seats=True
+            need_seats = True
         super(Table, self).save(*args, **kwargs)
         if need_seats:
             for p in range(consts.NUM_SEATS + 1):
@@ -27,7 +27,7 @@ class Table(models.Model):
     
     @property
     def players(self):
-        return [s.player.username for s in self.available_seats]
+        return [s.player.username for s in self.seats if s.player]
     
     @property
     def num_seats(self):
