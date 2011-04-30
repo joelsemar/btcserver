@@ -57,7 +57,7 @@ class BlackJackTableHandler(BaseHandler):
         except BlackJackTable.DoesNotExist:
             return response.send(errors="Table not found", status=404)
         
-        seats = table.available_seats()
+        seats = table.available_seats
         if not seats:
             return response.send(errors="No seats available!", status=404)
         
