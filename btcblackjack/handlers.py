@@ -46,7 +46,7 @@ class BlackJackTableHandler(BaseHandler):
 
 class BlackJackTableTypesHandler(BaseHandler):
     allowed_methods = ('GET',)
-    
+    model = BlackJackTableType
     @login_required
     def read(self, request, response):
         """

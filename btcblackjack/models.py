@@ -5,7 +5,10 @@ from backend.models import BaseBet, Card, Player, Table
 class BlackJackTableType(models.Model):
     low_bet = models.DecimalField(max_digits=12, decimal_places=8)
     high_bet = models.DecimalField(max_digits=12, decimal_places=8)
-
+    
+    
+    def __unicode__(self):
+        return 'Low: %.8f, High: %s' % (self.low_bet, self.high_bet)
 
 class BlackJackTable(Table):
     type = models.ForeignKey(BlackJackTableType)
