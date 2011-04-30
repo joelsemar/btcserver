@@ -3,6 +3,7 @@ from webservice_tools import uuid
 import consts
 from django.db import models
 from webservice_tools.apps.user.models import BaseProfile
+from webservice_tools.decorators import cached_property
 from backend import bitcoinrpc
 # Create your models here.
 class Table(models.Model):
@@ -19,20 +20,31 @@ class Table(models.Model):
             for p in range(consts.NUM_SEATS + 1):
                 Seat.objects.create(position=p, table=self)
     
+    
+    @cached_property
+    def seats(self):
+        return self.seat_set.all().select_related('player')
+    
+    @property
+    def players(self):
+        return [s.player.user.username for s in self.seats]
+    
     @property
     def num_seats(self):
-        return  Seat.objects.filter(table=self).count()
+        return len(self.seats)
 
     @property
     def available_seats(self):
-        return Seat.objects.filter(table=self, player=None)
+        return [s for s in self.seats if s.player == None]
     
     @property
     def num_available_seats(self):
         return len(self.available_seats)
-        
+    
+    
 
 class Player(BaseProfile):
+    handle = models.CharField(max_length=32, default='', blank=True)
     show_animations = models.BooleanField(default=True)
     payout_address = models.CharField(max_length=64)
     account_name = models.CharField(unique=True, max_length=512, default='', blank=True)
@@ -45,6 +57,10 @@ class Player(BaseProfile):
         
     def create_callback(self):
         bitcoinrpc.create_account(self.account_name)
+    
+    @property
+    def username(self):
+        return self.handle or self.user.username
     
     @property    
     def balance(self):

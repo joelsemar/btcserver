@@ -7,7 +7,7 @@ from btcblackjack.models import BlackJackTable, BlackJackTableType
 class BlackJackTablesHandler(BaseHandler):
     allowed_methods = ('GET',)
     model = BlackJackTable
-    extra_fields = ('num_seats', 'num_available_seats')
+    extra_fields = ('num_seats', 'num_available_seats', 'players')
     
     @login_required
     def read(self, request, response):
