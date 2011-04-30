@@ -23,7 +23,7 @@ class Migration(SchemaMigration):
         db.delete_column('btcblackjack_blackjacktable', 'low_bet')
 
         # Adding field 'BlackJackTable.type'
-        db.add_column('btcblackjack_blackjacktable', 'type', self.gf('django.db.models.fields.related.ForeignKey')(default='', to=orm['btcblackjack.BlackJackTableType']), keep_default=False)
+        db.add_column('btcblackjack_blackjacktable', 'type', self.gf('django.db.models.fields.related.ForeignKey')(default=1, to=orm['btcblackjack.BlackJackTableType']), keep_default=False)
 
 
     def backwards(self, orm):
