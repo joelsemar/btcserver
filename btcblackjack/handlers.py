@@ -23,7 +23,7 @@ class BlackJackTablesHandler(BaseHandler):
 class BlackJackTableHandler(BaseHandler):
     allowed_methods = ('GET', 'POST', 'PUT', 'DELETE')
     model = BlackJackTable
-    extra_fields = ('num_seats', 'num_available_seats')
+    extra_fields = ('num_seats', 'num_available_seats', 'players')
     
     def read(self, request, id, response):
         """
