@@ -20,7 +20,7 @@ class BlackJackTablesHandler(BaseHandler):
 
 
 class BlackJackTableHandler(BaseHandler):
-    allowed_methods = ('GET', 'POST', 'DELETE')
+    allowed_methods = ('GET', 'POST', 'PUT', 'DELETE')
     model = BlackJackTable
     extra_fields = ('num_seats', 'num_available_seats')
     
@@ -43,6 +43,29 @@ class BlackJackTableHandler(BaseHandler):
         seat.save()
         return response.send()
         
+
+    @login_required
+    def update(self, request, id, response):
+        """
+        Attempt to join a table
+        API Handler: PUT  /blackack/table/{id}/join
+        Params:
+          id [id] id of the table you are trying to join
+        """
+        try:
+            table = BlackJackTable.objects.get(id=id)
+        except BlackJackTable.DoesNotExist:
+            return response.send(errors="Table not found", status=404)
+        
+        seats = table.available_seats()
+        if not seats:
+            return response.send(errors="No seats available!", status=404)
+        
+        seat = seats[0]
+        seat.player = request.user.get_profile()
+        seat.save()
+        return response.send(status=201)
+
 
 class BlackJackTableTypesHandler(BaseHandler):
     allowed_methods = ('GET',)
