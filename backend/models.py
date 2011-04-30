@@ -23,7 +23,7 @@ class Table(models.Model):
     
     @cached_property
     def seats(self):
-        return self.seat_set.all().select_related('player')
+        return Seat.objects.filter(table=self).select_related('player')
     
     @property
     def players(self):
