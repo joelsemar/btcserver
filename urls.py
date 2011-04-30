@@ -4,9 +4,8 @@ from webservice_tools import urls as service_urls
 from backend.handlers import  UserHandler, AccountWithdrawalHandler
 from webservice_tools.utils import Resource
 from btcblackjack import urls as blackjack_urls
-# Uncomment the next two lines to enable the admin:
-# from django.contrib import admin
-# admin.autodiscover()
+from django.contrib import admin
+admin.autodiscover()
 
 urlpatterns = patterns('',
     url(r'^services/', include(service_urls)),
@@ -23,5 +22,5 @@ urlpatterns = patterns('',
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
     # Uncomment the next line to enable the admin:
-    # url(r'^admin/', include(admin.site.urls)),
+     url(r'^admin/', include(admin.site.urls)),
 )
