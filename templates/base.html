@@ -1,0 +1,20 @@
+<!Doctype HTML>
+<html>
+    <head>
+    	{% block head %}
+        <title>Bitcoin Palace</title>
+        <link rel="icon" 
+      type="image/png" 
+      href="/static/images/favicon.ico">
+	  <link href="{{MEDIA_URL}}css/reset.css" rel="stylesheet" type="text/css" />
+	  <link href="{{MEDIA_URL}}css/base.css" rel="stylesheet" type="text/css" />
+	  <script type = 'application/javascript'>
+	  	var domain = '{{domain}}' 
+	  </script>
+	  {% endblock head %}
+    </head>
+    <body>
+        {% block content %}
+		{% endblock content %}    	
+    </body>
+</html>

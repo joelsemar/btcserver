@@ -1,15 +1,24 @@
 from decimal import *
-from webservice_tools import uuid
+from webservice_tools import uuid, utils
 import consts
 from django.db import models
+from django.core.cache import cache
 from webservice_tools.apps.user.models import BaseProfile
 from webservice_tools.decorators import cached_property
-from backend import bitcoinrpc
+from webservice_tools import db_utils
+from backend import bitcoinrpc, cache_updater
+
+import simplejson
 # Create your models here.
 class Table(models.Model):
     public = models.BooleanField(default=True)
     name = models.CharField(max_length=32)
     description = models.TextField()
+    
+    def dict(self):
+        return {'name': self.name,
+                'description': self.description,
+                'players': self.players}
     
     def save(self, *args, **kwargs):
         need_seats = False
@@ -32,7 +41,11 @@ class Table(models.Model):
     @property
     def num_seats(self):
         return len(self.seats)
-
+    
+    @property
+    def num_players(self):
+        return len(self.players)
+    
     @property
     def available_seats(self):
         return [s for s in self.seats if s.player == None]
@@ -40,6 +53,7 @@ class Table(models.Model):
     @property
     def num_available_seats(self):
         return len(self.available_seats)
+    
     
     
 
@@ -105,6 +119,15 @@ class Seat(models.Model):
     table = models.ForeignKey(Table)
     player = models.ForeignKey(Player, null=True)
     
+    class Meta:
+        unique_together = ('table', 'player')
+    
+    def save(self, *args, **kwargs):
+        if  self.id and db_utils.isDirty(self, 'player'):
+            cache_updater.send(self.table.game_state)
+        super(Seat, self).save(*args,  **kwargs)
+        
+            
 class BaseBet(models.Model):
     amount = models.DecimalField(max_digits=12, decimal_places=8)
     player = models.ForeignKey(Player)

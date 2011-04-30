@@ -81,6 +81,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
     'django.core.context_processors.request',
     'django.core.context_processors.media',
+    'backend.context_processors.base',
 )
 
 ROOT_URLCONF = 'urls'
@@ -104,7 +105,7 @@ INSTALLED_APPS = (
     'south',
     'backend',
     'piston',
-    'btcblackjack',
+    'blackjack',
 )
 
 
@@ -116,3 +117,9 @@ GLOBAL_LOG_LEVEL = logging.DEBUG
 GLOBAL_LOG_HANDLERS = [logging.handlers.RotatingFileHandler(LOG_FILE, maxBytes=200000, backupCount=2)]
 
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
+    }
+}

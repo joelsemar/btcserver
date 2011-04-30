@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block content %}
+<div id="table_list">
+	<h2 id='table_title'>Current Tables</h2>
+	<h3 id='table_title_sub_title'>Click to Join</h3>
+	<table id="main_table">
+    <thead>
+        <tr>
+            <th>
+                Name
+            </th>
+            <th>
+                Description
+            </th>
+            <th>
+                Players
+            </th>
+			<th>
+                Low Bet
+            </th>
+			<th>
+                High Bet
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for table in tables %}
+        <tr>
+            <td>
+            	{{table.name}}
+            </td>
+			<td>
+                {{table.description}}
+            </td>
+			<td>
+               {{table.num_players}} / {{table.num_seats}}
+            </td>
+			<td>
+               {{table.low_bet}}
+            </td>
+			<td>
+               {{table.high_bet}}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+	</table>
+</div>
+{% endblock content %}
