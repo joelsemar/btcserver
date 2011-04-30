@@ -8,6 +8,7 @@ class BlackJackTablesHandler(BaseHandler):
     allowed_methods = ('GET',)
     model = BlackJackTable
     extra_fields = ('num_seats', 'num_available_seats')
+    
     @login_required
     def read(self, request, response):
         """
@@ -23,6 +24,21 @@ class BlackJackTableHandler(BaseHandler):
     allowed_methods = ('GET', 'POST', 'PUT', 'DELETE')
     model = BlackJackTable
     extra_fields = ('num_seats', 'num_available_seats')
+    
+    def read(self, request, id, response):
+        """
+        Return table state.
+        API Handler: GET  /blackack/table/{id}
+        Params:
+          id [id] id of the table
+        """
+        try:
+            table = BlackJackTable.objects.get(id=id)
+        except BlackJackTable.DoesNotExist:
+            return response.send(errors='Table not found', status=404)
+        
+        response.set(table=table)
+        return response.send()
     
     @login_required
     def create(self, request, id, response):
