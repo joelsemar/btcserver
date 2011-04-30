@@ -27,7 +27,7 @@ class Table(models.Model):
     
     @property
     def players(self):
-        return [s.player.user.username for s in self.seats]
+        return [s.player.username for s in self.available_seats]
     
     @property
     def num_seats(self):
