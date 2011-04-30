@@ -14,7 +14,7 @@ class BlackJackTable(Table):
     type = models.ForeignKey(BlackJackTableType)
     
     def __unicode__(self):
-        return '%s: %s - %s' % (self.name, self.low_bet, self.high_bet)
+        return '%s: %s - %s' % (self.name, self.type.low_bet, self.type.high_bet)
         
     class Meta:
         abstract = False
