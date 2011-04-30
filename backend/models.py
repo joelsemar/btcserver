@@ -11,10 +11,13 @@ class Table(models.Model):
     description = models.TextField()
     
     def save(self, *args, **kwargs):
+        need_seats = False
         if not self.id:
+            need_seats=True
+        super(Table, self).save(*args, **kwargs)
+        if need_seats:
             for p in range(consts.NUM_SEATS + 1):
                 Seat.objects.create(position=p, table=self)
-        super(Table, self).save(*args, **kwargs)
     
     @property
     def num_seats(self):
