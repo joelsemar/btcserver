@@ -10,8 +10,21 @@ class Table(models.Model):
     name = models.CharField(max_length=32)
     description = models.TextField()
     
-    class Meta:
-        abstract = True
+    def save(self, *args, **kwargs):
+        if not self.id:
+            for p in range(consts.NUM_SEATS + 1):
+                Seat.objects.create(position=p, table=self)
+        super(Table, self).save(*args, **kwargs)
+    
+    @property
+    def num_seats(self):
+        return  Seat.objects.filter(table=self).count()
+
+    @property
+    def seats_available(self):
+        seats = Seat.objects.filter(table=self)
+        return len([s.player for s in seats if s.player])
+        
 
 class Player(BaseProfile):
     show_animations = models.BooleanField(default=True)
@@ -62,3 +75,17 @@ class Player(BaseProfile):
 class Card(models.Model):
     name = models.CharField(max_length=15, choices=consts.CARD_CHOICES)
     value = models.PositiveIntegerField()
+
+
+
+class Seat(models.Model):
+    position = models.PositiveIntegerField()
+    table = models.ForeignKey(Table)
+    player = models.ForeignKey(Player, null=True)
+    
+class BaseBet(models.Model):
+    amount = models.DecimalField(max_digits=8, decimal_places=2)
+    player = models.ForeignKey(Player)
+        
+    class Meta:
+        abstract = True

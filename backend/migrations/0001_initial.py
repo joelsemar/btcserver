@@ -8,12 +8,21 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
         
+        # Adding model 'Table'
+        db.create_table('backend_table', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('public', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=32)),
+            ('description', self.gf('django.db.models.fields.TextField')()),
+        ))
+        db.send_create_signal('backend', ['Table'])
+
         # Adding model 'Player'
         db.create_table('backend_player', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
             ('show_animations', self.gf('django.db.models.fields.BooleanField')(default=True)),
-            ('payout_address', self.gf('django.db.models.fields.CharField')(default='', max_length=64, blank=True)),
+            ('payout_address', self.gf('django.db.models.fields.CharField')(max_length=64)),
             ('account_name', self.gf('django.db.models.fields.CharField')(default='', unique=True, max_length=512, blank=True)),
         ))
         db.send_create_signal('backend', ['Player'])
@@ -26,14 +35,29 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal('backend', ['Card'])
 
+        # Adding model 'Seat'
+        db.create_table('backend_seat', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('position', self.gf('django.db.models.fields.PositiveIntegerField')()),
+            ('table', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['backend.Table'])),
+            ('player', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['backend.Player'], null=True)),
+        ))
+        db.send_create_signal('backend', ['Seat'])
+
 
     def backwards(self, orm):
         
+        # Deleting model 'Table'
+        db.delete_table('backend_table')
+
         # Deleting model 'Player'
         db.delete_table('backend_player')
 
         # Deleting model 'Card'
         db.delete_table('backend_card')
+
+        # Deleting model 'Seat'
+        db.delete_table('backend_seat')
 
 
     models = {
@@ -76,9 +100,23 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'Player'},
             'account_name': ('django.db.models.fields.CharField', [], {'default': "''", 'unique': 'True', 'max_length': '512', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'payout_address': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '64', 'blank': 'True'}),
+            'payout_address': ('django.db.models.fields.CharField', [], {'max_length': '64'}),
             'show_animations': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"})
+        },
+        'backend.seat': {
+            'Meta': {'object_name': 'Seat'},
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'player': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['backend.Player']", 'null': 'True'}),
+            'position': ('django.db.models.fields.PositiveIntegerField', [], {}),
+            'table': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['backend.Table']"})
+        },
+        'backend.table': {
+            'Meta': {'object_name': 'Table'},
+            'description': ('django.db.models.fields.TextField', [], {}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '32'}),
+            'public': ('django.db.models.fields.BooleanField', [], {'default': 'True'})
         },
         'contenttypes.contenttype': {
             'Meta': {'ordering': "('name',)", 'unique_together': "(('app_label', 'model'),)", 'object_name': 'ContentType', 'db_table': "'django_content_type'"},

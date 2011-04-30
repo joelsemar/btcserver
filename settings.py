@@ -98,13 +98,13 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.messages',
+    'django.contrib.admin',
     'webservice_tools',
     'webservice_tools.apps.user',
     'south',
-    'btcblackjack',
     'backend',
     'piston',
-    'django.contrib.admin',
+    'btcblackjack',
 )
 
 
