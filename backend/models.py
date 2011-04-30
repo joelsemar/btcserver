@@ -87,7 +87,7 @@ class Seat(models.Model):
     player = models.ForeignKey(Player, null=True)
     
 class BaseBet(models.Model):
-    amount = models.DecimalField(max_digits=8, decimal_places=2)
+    amount = models.DecimalField(max_digits=12, decimal_places=8)
     player = models.ForeignKey(Player)
         
     class Meta:

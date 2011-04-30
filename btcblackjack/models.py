@@ -3,8 +3,8 @@ from django.db import models
 from backend.models import BaseBet, Card, Player, Table
 
 class BlackJackTableType(models.Model):
-    low_bet = models.DecimalField(max_digits=8, decimal_places=2)
-    high_bet = models.DecimalField(max_digits=8, decimal_places=2)
+    low_bet = models.DecimalField(max_digits=12, decimal_places=8)
+    high_bet = models.DecimalField(max_digits=12, decimal_places=8)
 
 
 class BlackJackTable(Table):
