@@ -47,12 +47,12 @@ USE_L10N = True
 import sys
 import os
 MEDIA_ROOT = os.path.join(sys.path[0], 'static')
-MEDIA_URL = '/%s/static/' % SERVER_NAME
+MEDIA_URL = '/static/' % SERVER_NAME
 
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
 # Examples: "http://foo.com/media/", "/media/".
-ADMIN_MEDIA_PREFIX = '/%s/static/admin-media/' % SERVER_NAME
+ADMIN_MEDIA_PREFIX = '/static/admin-media/' % SERVER_NAME
 
 
 # Make this unique, and don't share it with anybody.
