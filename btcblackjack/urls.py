@@ -6,5 +6,7 @@ from btcblackjack.handlers import *
 # admin.autodiscover()
 
 urlpatterns = patterns('',
-    (r'/tables/', Resource(BlackJackTableHandler)),
+    (r'^tables/?$', Resource(BlackJackTablesHandler)),
+    (r'^table/(?P<id>[\d]+', Resource(BlackJackTableHandler)),
+    (r'^tabletypes/?$', Resource(BlackJackTableTypesHandler)),
 )
