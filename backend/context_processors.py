@@ -1,7 +1,8 @@
 
 
+
 def base(request):
-    context = {'domain': '127.0.0.1'}
+    context = {'domain': 'bitcoinpalace.com'}
     if request.user.is_authenticated():
         player= request.user.get_profile()
         context['name'] = player.name 
