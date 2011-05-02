@@ -7,6 +7,8 @@ ADMINS = (
     #('me', ' ') ,('Your Name', 'your_email@domain.com'),
 )
 
+LOGIN_URL = '/'
+
 MANAGERS = ADMINS
 SERVER_NAME = 'btcserver'
 DATABASES = {

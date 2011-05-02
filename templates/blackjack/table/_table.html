@@ -1,0 +1,59 @@
+<script type="application/javascript">
+                 
+      		 $(document).ready(function(){
+                init({{table.table_id}});
+            });
+</script>
+<div id="bid_form" class='base_container' style='display:none;'>
+    BTC: <input type='text' id='bid_input' />
+    <div id="button_space">
+        <div id ="submit_bid_button" class='buttonstyle' onclick="bet_button_handler()">
+            Confirm
+        </div>
+    </div>
+</div>
+<div id="dealer_cards">
+</div>
+
+<div id ="cards">
+	<div id="option_panel" class='base_container card_slot' style='display:none;' >
+    <div id='option_button_slot'>
+        <div class='option_button buttonstyle' id="hit_option" onclick="app.server.game.send_action('hit')">
+            Hit
+        </div>
+        <div class='option_button buttonstyle' id="stand_option" onclick="app.server.game.send_action('stand')">
+            Stand
+        </div>
+        <div class='option_button buttonstyle' id="double_option">
+            Double
+        </div>
+        <div class='option_button buttonstyle' id="split_option" >
+            Split
+        </div>
+    </div>
+</div>
+</div>
+<table id="seats_table">
+    <tr>
+        <td>
+            <div class='player_tab base_container player_tab_pos_1'>
+                Empty Seat
+            </div>
+        </td>
+        <td>
+            <div class='player_tab base_container player_tab_pos_2'>
+                Empty Seat
+            </div>
+        </td>
+        <td>
+            <div class='player_tab base_container player_tab_pos_3'>
+                Empty Seat
+            </div>
+        </td>
+        <td>
+            <div class='player_tab base_container player_tab_pos_4'>
+                Empty Seat
+            </div>
+        </td>
+    </tr>
+</table>

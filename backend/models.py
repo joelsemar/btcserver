@@ -1,24 +1,23 @@
 from decimal import *
-from webservice_tools import uuid, utils
+import simplejson
+from webservice_tools import db_utils, uuid, utils
 import consts
 from django.db import models
 from django.core.cache import cache
 from webservice_tools.apps.user.models import BaseProfile
 from webservice_tools.decorators import cached_property
-from webservice_tools import db_utils
-from backend import bitcoinrpc, cache_updater
+from backend import bitcoinrpc
+from backend.client_connection import ClientConnection
+import random
 
-import simplejson
 # Create your models here.
 class Table(models.Model):
     public = models.BooleanField(default=True)
     name = models.CharField(max_length=32)
-    description = models.TextField()
-    
+    deck = models.TextField(default='[]', editable=False)
+    current_turn = models.ForeignKey('backend.Seat', related_name='playing_at', null=True)
     def dict(self):
-        return {'name': self.name,
-                'description': self.description,
-                'players': self.players}
+        return {'name': self.name, }
     
     def save(self, *args, **kwargs):
         need_seats = False
@@ -26,17 +25,57 @@ class Table(models.Model):
             need_seats = True
         super(Table, self).save(*args, **kwargs)
         if need_seats:
-            for p in range(consts.NUM_SEATS + 1):
-                Seat.objects.create(position=p, table=self)
+            for p in range(consts.NUM_SEATS):
+                Seat.objects.create(position=p + 1, table=self)
+                
+    def get_game_state(self):
+        ret = {'table_id': self.id,
+               'data': self.dict()}
+        players = []
+        for seat in self.seats:
+            players.append({'seat_id': seat.id,
+                            'player_name': seat.player.name if seat.player else None,
+                            'user_id': seat.player.user_id if seat.player else None,
+                            'current_turn': self.current_turn_id == self.id})
+        ret['data']['players'] = players
+        return ret
     
+    
+    def shuffle_cards(self):
+        deck = []
+        for _ in range(self.num_decks):
+            deck.append(consts.CARD_IDS)
+        deck = utils.flatten(deck)
+        random.shuffle(deck)
+        self.deck = simplejson.dumps(deck)
+
+    
+    def get_deck(self):
+        return simplejson.loads(self.deck)
+    
+    def pull_cards(self, num_cards):
+        deck = self.get_deck()
+        if len(deck) < num_cards:
+            self.shuffle_cards()
+            deck = self.get_deck()
+        cards = deck[-num_cards:]
+        del deck[-num_cards:]
+        self.deck = simplejson.dumps(deck)
+        return [c for c in consts.CARD_DATA if c['id'] in cards]
+    
+    
+    @property
+    def num_decks(self):
+        return consts.NUM_DECKS_DEFAULT
     
     @cached_property
     def seats(self):
         return Seat.objects.filter(table=self).select_related('player')
     
+    
     @property
     def players(self):
-        return [s.player.username for s in self.seats if s.player]
+        return [s.player.name for s in self.seats if s.player]
     
     @property
     def num_seats(self):
@@ -73,7 +112,7 @@ class Player(BaseProfile):
         bitcoinrpc.create_account(self.account_name)
     
     @property
-    def username(self):
+    def name(self):
         return self.handle or self.user.username
     
     @property    
@@ -89,14 +128,14 @@ class Player(BaseProfile):
         raises InvalidOperation
         """
         assert isinstance(amount, Decimal)
-        bitcoinrpc.credit(str(amount), self.account_name)
+        bitcoinrpc.credit(float(amount), self.account_name)
     
     def debit(self, amount):
         """
         raises InvalidOperation
         """
         assert isinstance(amount, Decimal)
-        bitcoinrpc.debit(str(amount), self.account_name)
+        bitcoinrpc.debit(float(amount), self.account_name)
         
     
     def withdraw(self, amount):
@@ -106,14 +145,46 @@ class Player(BaseProfile):
         amount = float(amount)
         if amount <= self.balance:
             bitcoinrpc.send(self.account_name, self.payout_address, amount)
+    
+    def update_balance(self, table_id, balance_change):
+        data = {'balance': str(self.balance), 'balance_change': balance_change}
+        conn = ClientConnection(data=data, table_id=table_id,
+                                user_id=self.user_id, action='update_balance')
+        conn.send()
             
-            
+
 class Card(models.Model):
-    name = models.CharField(max_length=15, choices=consts.CARD_CHOICES)
-    value = models.PositiveIntegerField()
+    value = models.CharField(max_length=15, choices=consts.CARD_VALUE_CHOICES)
+    suite = models.CharField(max_length=15, choices=consts.CARD_SUITE_CHOICES)
+    card_dir = '/static/images/cards'
+    @classmethod
+    def get_face_down(cls):
+        return {'id': None, 'value': None, 'suite': None,
+                'name': None, 'image_url': "%s/%s" % (cls.card_dir, 'gray_back.png')}
+    
+    def dict(self):
+        return {'id': self.id, 'value': self.value, 'suite': self.suite,
+                'name': self.name, 'image_url':self.image_url}
+    
+    @property
+    def name(self):
+        return "%s of %s" % (self.value.title(), self.suite.title())
+    
+    @property
+    def image_url(self):
+        return '%s/%s_%s.png' % (self.card_dir, self.value, self.suite)
+    
+    
+    class Meta:
+        unique_together = ('value', 'suite')
+        
+    def admin_thumbnail(self):
+        return u'<img src="%s" />' % (self.image_url)
+    admin_thumbnail.short_description = 'Thumbnail'
+    admin_thumbnail.allow_tags = True
 
-
-
+    
+    
 class Seat(models.Model):
     position = models.PositiveIntegerField()
     table = models.ForeignKey(Table)
@@ -121,16 +192,26 @@ class Seat(models.Model):
     
     class Meta:
         unique_together = ('table', 'player')
-    
+        ordering = ('position',)
+        
     def save(self, *args, **kwargs):
         if  self.id and db_utils.isDirty(self, 'player'):
-            cache_updater.send(self.table.game_state)
-        super(Seat, self).save(*args,  **kwargs)
+            self.table.update_game()
+        super(Seat, self).save(*args, **kwargs)
         
-            
-class BaseBet(models.Model):
-    amount = models.DecimalField(max_digits=12, decimal_places=8)
-    player = models.ForeignKey(Player)
-        
+class BaseHand(models.Model):
+    cards = models.CharField(max_length=128, default='[]')
+    bet = models.DecimalField(max_digits=12, decimal_places=8, null=True)
+    player = models.ForeignKey(Player, null=True)
     class Meta:
         abstract = True
+    
+    def get_card_ids(self):
+        return simplejson.loads(self.cards)
+    
+    def set_card_ids(self, card_ids):
+        self.cards = simplejson.dumps(card_ids)
+        
+    def get_cards(self):
+        return [c for c in consts.CARD_DATA if c['id'] in self.get_card_ids()]
+    

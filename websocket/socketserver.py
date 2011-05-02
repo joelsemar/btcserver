@@ -11,6 +11,7 @@ __author__ = 'Reza Lotun'
 
 from datetime import datetime
 import simplejson
+from collections import defaultdict
 from twisted.internet.protocol import Protocol, Factory
 from twisted.web import server, xmlrpc
 from twisted.web.static import File
@@ -19,30 +20,73 @@ from webservice_tools.twisted.websocket import WebSocketHandler, WebSocketSite
 from twisted.internet import reactor, protocol
 from twisted.protocols.memcache import MemCacheProtocol, DEFAULT_PORT
 
-KEY_FORMAT = "TABLE_ID_%s"
 
-class CacheUpdater(xmlrpc.XMLRPC):
+
+class ClientConnectionManager(xmlrpc.XMLRPC):
+    """
+    Manages client connections
+    Respond to xmlrpc updates from the django side, pass along through websocket to game client,
+    provide some functionality for
+    targeting tables and specific users on a table.
+    """
     isLeaf = True
-    def xmlrpc_update(self, response):
-        game_handler = registered_handlers.get(KEY_FORMAT % response.get('table_id'))
-        if game_handler:
-            game_handler.send(response.get('data'))
+    
+    
+    def __init__(self, *args, **kwargs):
+        self.registered_handlers = defaultdict(list)
+        self.KEY_FORMAT = "TABLE_ID_%s"
+        self._cached_game_state = None
+        xmlrpc.XMLRPC.__init__(self, *args, **kwargs)
+        
+    
+    def xmlrpc_update_table(self, response):
+        self._cached_game_state = response
+        table_id = response.get('table_id')
+        game_handlers = self.registered_handlers[self.KEY_FORMAT % table_id]
+        for handler in game_handlers:        
+            handler.send(response)
+    
+    def xmlrpc_update_user(self, response):
+        table_id = response.get('table_id')
+        user_id = response.get('user_id')
+        assert user_id
+        game_handlers = self.registered_handlers.get(self.KEY_FORMAT % table_id)
+        game_handlers = [g for g in game_handlers if g.user_id == user_id]
+        for handler in game_handlers:        
+            handler.send(response)
+    
+    
+    def register(self, handler):
+        key = self.KEY_FORMAT % handler.table_id
+        handlers = self.registered_handlers[key]
+        if handler not in handlers:
+            handlers.append(handler)
+        if self._cached_game_state:
+            payload = self._cached_game_state
+            payload['user_id'] = handler.user_id
+            handler.send(payload)
 
-registered_handlers = {}
+    def deregister(self, handler):
+        key = self.KEY_FORMAT % handler.table_id
+        handlers = self.registered_handlers[key]
+        if handler  in handlers:
+            handlers.remove(handler)
 
-class GameHandler(WebSocketHandler):
+
+class ClientHandler(WebSocketHandler):
     def __init__(self, transport):
         WebSocketHandler.__init__(self, transport)
-        #self.periodic_call = task.LoopingCall(self.get_game)
 
     def __del__(self):
         print 'Deleting handler'    
     
     def register(self):
-        registered_handlers[KEY_FORMAT % self.table_id] = self
+        global client_connection_manager
+        client_connection_manager.register(self)
     
     def send(self, data):
-        self.transport.write(data)
+        print 'Sending: %s to %s' % (data, self.user_id)
+        self.transport.write(simplejson.dumps(data))
 
     def frameReceived(self, frame):
         try:
@@ -51,18 +95,22 @@ class GameHandler(WebSocketHandler):
             print frame
             
         table_id = data.get('table_id')
-        if table_id:
+        user_id = data.get('user_id')
+        if table_id and user_id:
             self.table_id = table_id
+            self.user_id = user_id
             self.register()
-            self.transport.write(simplejson.dumps(dict(registered=True)))
+            self.transport.write(simplejson.dumps(dict(registration_success=True)))
+            
         #print 'Peer: ', self.transport.getPeer()
-        #self.periodic_call.start(0.5)
 
     def connectionMade(self):
         print 'Connected to client.'
         print 'Peer: ', self.transport.getPeer()
 
     def connectionLost(self, reason):
+        global client_connection_manager
+        client_connection_manager.deregister(self)
         print 'Lost connection.'
         # here is a good place to deregister this handler object
 
@@ -92,7 +140,7 @@ def getSocketService():
     # create a resource to serve static files
     root = server.Site(File('.'))
     site = WebSocketSite(root)
-    site.addHandler('/test', GameHandler)
+    site.addHandler('/test', ClientHandler)
     return internet.TCPServer(8080, site)
 
 
@@ -102,10 +150,10 @@ def getFlashPolicy():
     return internet.TCPServer(843, factory)
 
 
-def getCacheUpdater():
-    r = CacheUpdater(allowNone=True)
-    xmlrpc.addIntrospection(r)
-    site = server.Site(r)
+def getClientConnectionService():
+    global client_connection_manager
+    xmlrpc.addIntrospection(client_connection_manager)
+    site = server.Site(client_connection_manager)
     return internet.TCPServer(9090, site)
 
 # this is the core part of any tac file, the creation of the root-level
@@ -119,5 +167,6 @@ ws_service.setServiceParent(application)
 flash_service = getFlashPolicy()
 flash_service.setServiceParent(application)
 
-cache_updater = getCacheUpdater()
-cache_updater.setServiceParent(application)
+client_connection_manager = ClientConnectionManager(allowNone=True)
+client_connection_service = getClientConnectionService()
+client_connection_service.setServiceParent(application)

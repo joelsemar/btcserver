@@ -4,7 +4,9 @@
  */
 var BASE_TEN = 10;
 var EXPECTED_TIME_LENGTH = 3
-
+function load_page(loc){
+	window.location = loc;
+}
 function formatDate(date, pattern){
     /*
      * takes json string date from django datetime object and returns a

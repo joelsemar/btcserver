@@ -7,7 +7,6 @@ def create_account(username):
     """
     Creates a new account for the given username, returns the new address.
     """
-    return True
     if rpc.listaccounts().get('username'):
         return False
     
@@ -15,16 +14,16 @@ def create_account(username):
 
 
 def get_address(account_name):
-    return '' #rpc.getaccountaddress(account_name)
+    return rpc.getaccountaddress(account_name)
 
 def get_balance(account_name):
-    return '' #rpc.getbalance(account_name)
+    return rpc.getbalance(account_name)
 
 def credit(amount, account_name):
-    return '' #rpc.move(MAIN_ACCOUNT, account_name, amount)
+    return rpc.move(MAIN_ACCOUNT, account_name, amount)
 
 def debit(amount, account_name):
-    return '' #rpc.move(account_name, MAIN_ACCOUNT, amount)
+    return rpc.move(account_name, MAIN_ACCOUNT, amount)
 
 def send(account_name, to_address, amount):
-    return '' #rpc.sendfrom(account_name, to_address, amount)
+    return rpc.sendfrom(account_name, to_address, amount)

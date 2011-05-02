@@ -1,0 +1,427 @@
+[
+    {
+        "pk": 1, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "spades", 
+            "value": "ace"
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "spades", 
+            "value": "two"
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "spades", 
+            "value": "three"
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "spades", 
+            "value": "four"
+        }
+    }, 
+    {
+        "pk": 5, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "spades", 
+            "value": "five"
+        }
+    }, 
+    {
+        "pk": 6, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "spades", 
+            "value": "six"
+        }
+    }, 
+    {
+        "pk": 7, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "spades", 
+            "value": "seven"
+        }
+    }, 
+    {
+        "pk": 8, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "spades", 
+            "value": "eight"
+        }
+    }, 
+    {
+        "pk": 9, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "spades", 
+            "value": "nine"
+        }
+    }, 
+    {
+        "pk": 10, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "spades", 
+            "value": "ten"
+        }
+    }, 
+    {
+        "pk": 11, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "spades", 
+            "value": "jack"
+        }
+    }, 
+    {
+        "pk": 12, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "spades", 
+            "value": "queen"
+        }
+    }, 
+    {
+        "pk": 13, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "spades", 
+            "value": "king"
+        }
+    }, 
+    {
+        "pk": 14, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "hearts", 
+            "value": "ace"
+        }
+    }, 
+    {
+        "pk": 15, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "hearts", 
+            "value": "two"
+        }
+    }, 
+    {
+        "pk": 16, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "hearts", 
+            "value": "three"
+        }
+    }, 
+    {
+        "pk": 17, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "hearts", 
+            "value": "four"
+        }
+    }, 
+    {
+        "pk": 18, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "hearts", 
+            "value": "five"
+        }
+    }, 
+    {
+        "pk": 19, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "hearts", 
+            "value": "six"
+        }
+    }, 
+    {
+        "pk": 20, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "hearts", 
+            "value": "seven"
+        }
+    }, 
+    {
+        "pk": 21, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "hearts", 
+            "value": "eight"
+        }
+    }, 
+    {
+        "pk": 22, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "hearts", 
+            "value": "nine"
+        }
+    }, 
+    {
+        "pk": 23, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "hearts", 
+            "value": "ten"
+        }
+    }, 
+    {
+        "pk": 24, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "hearts", 
+            "value": "jack"
+        }
+    }, 
+    {
+        "pk": 25, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "hearts", 
+            "value": "queen"
+        }
+    }, 
+    {
+        "pk": 26, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "hearts", 
+            "value": "king"
+        }
+    }, 
+    {
+        "pk": 27, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "clubs", 
+            "value": "ace"
+        }
+    }, 
+    {
+        "pk": 28, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "clubs", 
+            "value": "two"
+        }
+    }, 
+    {
+        "pk": 29, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "clubs", 
+            "value": "three"
+        }
+    }, 
+    {
+        "pk": 30, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "clubs", 
+            "value": "four"
+        }
+    }, 
+    {
+        "pk": 31, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "clubs", 
+            "value": "five"
+        }
+    }, 
+    {
+        "pk": 32, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "clubs", 
+            "value": "six"
+        }
+    }, 
+    {
+        "pk": 33, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "clubs", 
+            "value": "seven"
+        }
+    }, 
+    {
+        "pk": 34, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "clubs", 
+            "value": "eight"
+        }
+    }, 
+    {
+        "pk": 35, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "clubs", 
+            "value": "nine"
+        }
+    }, 
+    {
+        "pk": 36, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "clubs", 
+            "value": "ten"
+        }
+    }, 
+    {
+        "pk": 37, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "clubs", 
+            "value": "jack"
+        }
+    }, 
+    {
+        "pk": 38, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "clubs", 
+            "value": "queen"
+        }
+    }, 
+    {
+        "pk": 39, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "clubs", 
+            "value": "king"
+        }
+    }, 
+    {
+        "pk": 40, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "diamonds", 
+            "value": "ace"
+        }
+    }, 
+    {
+        "pk": 41, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "diamonds", 
+            "value": "two"
+        }
+    }, 
+    {
+        "pk": 42, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "diamonds", 
+            "value": "three"
+        }
+    }, 
+    {
+        "pk": 43, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "diamonds", 
+            "value": "four"
+        }
+    }, 
+    {
+        "pk": 44, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "diamonds", 
+            "value": "five"
+        }
+    }, 
+    {
+        "pk": 45, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "diamonds", 
+            "value": "six"
+        }
+    }, 
+    {
+        "pk": 46, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "diamonds", 
+            "value": "seven"
+        }
+    }, 
+    {
+        "pk": 47, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "diamonds", 
+            "value": "eight"
+        }
+    }, 
+    {
+        "pk": 48, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "diamonds", 
+            "value": "nine"
+        }
+    }, 
+    {
+        "pk": 49, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "diamonds", 
+            "value": "ten"
+        }
+    }, 
+    {
+        "pk": 50, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "diamonds", 
+            "value": "jack"
+        }
+    }, 
+    {
+        "pk": 51, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "diamonds", 
+            "value": "queen"
+        }
+    }, 
+    {
+        "pk": 52, 
+        "model": "backend.card", 
+        "fields": {
+            "suite": "diamonds", 
+            "value": "king"
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "blackjack.blackjacktabletype", 
+        "fields": {
+            "high_bet": "0.01000000", 
+            "name": "Test Table", 
+            "low_bet": "0.00010000"
+        }
+    }
+]

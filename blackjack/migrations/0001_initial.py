@@ -5,23 +5,41 @@ from south.v2 import SchemaMigration
 from django.db import models
 
 class Migration(SchemaMigration):
-    depends_on = (
-        ("backend", "0001_initial"),
-    )
+
     def forwards(self, orm):
         
+        # Adding model 'BlackJackTableType'
+        db.create_table('blackjack_blackjacktabletype', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=128)),
+            ('low_bet', self.gf('django.db.models.fields.DecimalField')(max_digits=12, decimal_places=8)),
+            ('high_bet', self.gf('django.db.models.fields.DecimalField')(max_digits=12, decimal_places=8)),
+        ))
+        db.send_create_signal('blackjack', ['BlackJackTableType'])
+
         # Adding model 'BlackJackTable'
         db.create_table('blackjack_blackjacktable', (
             ('table_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['backend.Table'], unique=True, primary_key=True)),
-            ('low_bet', self.gf('django.db.models.fields.DecimalField')(max_digits=8, decimal_places=2)),
-            ('high_bet', self.gf('django.db.models.fields.DecimalField')(max_digits=8, decimal_places=2)),
+            ('type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['blackjack.BlackJackTableType'])),
         ))
         db.send_create_signal('blackjack', ['BlackJackTable'])
+
+        # Adding model 'BlackJackRound'
+        db.create_table('blackjack_blackjackround', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('table', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['blackjack.BlackJackTable'])),
+            ('taking_bets', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('closed', self.gf('django.db.models.fields.BooleanField')(default=False)),
+        ))
+        db.send_create_signal('blackjack', ['BlackJackRound'])
 
         # Adding model 'BlackJackHand'
         db.create_table('blackjack_blackjackhand', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('type', self.gf('django.db.models.fields.CharField')(max_length=16)),
+            ('bet', self.gf('django.db.models.fields.DecimalField')(null=True, max_digits=12, decimal_places=8)),
+            ('player', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['backend.Player'], null=True)),
+            ('round', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['blackjack.BlackJackRound'])),
+            ('dealers_hand', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
         db.send_create_signal('blackjack', ['BlackJackHand'])
 
@@ -33,42 +51,23 @@ class Migration(SchemaMigration):
         ))
         db.create_unique('blackjack_blackjackhand_cards', ['blackjackhand_id', 'card_id'])
 
-        # Adding model 'BlackJackRound'
-        db.create_table('blackjack_blackjackround', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('table', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['blackjack.BlackJackTable'])),
-            ('dealers_hand', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['blackjack.BlackJackHand'])),
-        ))
-        db.send_create_signal('blackjack', ['BlackJackRound'])
-
-        # Adding model 'BlackJackBet'
-        db.create_table('blackjack_blackjackbet', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('amount', self.gf('django.db.models.fields.DecimalField')(max_digits=8, decimal_places=2)),
-            ('player', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['backend.Player'])),
-            ('game', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['blackjack.BlackJackRound'])),
-            ('players_hand', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['blackjack.BlackJackHand'])),
-            ('score', self.gf('django.db.models.fields.PositiveIntegerField')()),
-        ))
-        db.send_create_signal('blackjack', ['BlackJackBet'])
-
 
     def backwards(self, orm):
         
+        # Deleting model 'BlackJackTableType'
+        db.delete_table('blackjack_blackjacktabletype')
+
         # Deleting model 'BlackJackTable'
         db.delete_table('blackjack_blackjacktable')
+
+        # Deleting model 'BlackJackRound'
+        db.delete_table('blackjack_blackjackround')
 
         # Deleting model 'BlackJackHand'
         db.delete_table('blackjack_blackjackhand')
 
         # Removing M2M table for field cards on 'BlackJackHand'
         db.delete_table('blackjack_blackjackhand_cards')
-
-        # Deleting model 'BlackJackRound'
-        db.delete_table('blackjack_blackjackround')
-
-        # Deleting model 'BlackJackBet'
-        db.delete_table('blackjack_blackjackbet')
 
 
     models = {
@@ -102,52 +101,62 @@ class Migration(SchemaMigration):
             'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'})
         },
         'backend.card': {
-            'Meta': {'object_name': 'Card'},
+            'Meta': {'unique_together': "(('value', 'suite'),)", 'object_name': 'Card'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '15'}),
-            'value': ('django.db.models.fields.PositiveIntegerField', [], {})
+            'suite': ('django.db.models.fields.CharField', [], {'max_length': '15'}),
+            'value': ('django.db.models.fields.CharField', [], {'max_length': '15'})
         },
         'backend.player': {
             'Meta': {'object_name': 'Player'},
             'account_name': ('django.db.models.fields.CharField', [], {'default': "''", 'unique': 'True', 'max_length': '512', 'blank': 'True'}),
+            'handle': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '32', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'payout_address': ('django.db.models.fields.CharField', [], {'max_length': '64'}),
             'show_animations': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"})
+            'user': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['auth.User']", 'unique': 'True'})
+        },
+        'backend.seat': {
+            'Meta': {'unique_together': "(('table', 'player'),)", 'object_name': 'Seat'},
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'player': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['backend.Player']", 'null': 'True'}),
+            'position': ('django.db.models.fields.PositiveIntegerField', [], {}),
+            'table': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['backend.Table']"})
         },
         'backend.table': {
             'Meta': {'object_name': 'Table'},
-            'description': ('django.db.models.fields.TextField', [], {}),
+            'current_turn': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'playing_at'", 'null': 'True', 'to': "orm['backend.Seat']"}),
+            'deck': ('django.db.models.fields.TextField', [], {'default': "''"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '32'}),
             'public': ('django.db.models.fields.BooleanField', [], {'default': 'True'})
         },
-        'blackjack.blackjackbet': {
-            'Meta': {'object_name': 'BlackJackBet'},
-            'amount': ('django.db.models.fields.DecimalField', [], {'max_digits': '8', 'decimal_places': '2'}),
-            'game': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['blackjack.BlackJackRound']"}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'player': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['backend.Player']"}),
-            'players_hand': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['blackjack.BlackJackHand']"}),
-            'score': ('django.db.models.fields.PositiveIntegerField', [], {})
-        },
         'blackjack.blackjackhand': {
             'Meta': {'object_name': 'BlackJackHand'},
+            'bet': ('django.db.models.fields.DecimalField', [], {'null': 'True', 'max_digits': '12', 'decimal_places': '8'}),
             'cards': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['backend.Card']", 'symmetrical': 'False'}),
+            'dealers_hand': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'type': ('django.db.models.fields.CharField', [], {'max_length': '16'})
+            'player': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['backend.Player']", 'null': 'True'}),
+            'round': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['blackjack.BlackJackRound']"})
         },
         'blackjack.blackjackround': {
             'Meta': {'object_name': 'BlackJackRound'},
-            'dealers_hand': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['blackjack.BlackJackHand']"}),
+            'closed': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'table': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['blackjack.BlackJackTable']"})
+            'table': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['blackjack.BlackJackTable']"}),
+            'taking_bets': ('django.db.models.fields.BooleanField', [], {'default': 'True'})
         },
         'blackjack.blackjacktable': {
             'Meta': {'object_name': 'BlackJackTable', '_ormbases': ['backend.Table']},
-            'high_bet': ('django.db.models.fields.DecimalField', [], {'max_digits': '8', 'decimal_places': '2'}),
-            'low_bet': ('django.db.models.fields.DecimalField', [], {'max_digits': '8', 'decimal_places': '2'}),
-            'table_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['backend.Table']", 'unique': 'True', 'primary_key': 'True'})
+            'table_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['backend.Table']", 'unique': 'True', 'primary_key': 'True'}),
+            'type': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['blackjack.BlackJackTableType']"})
+        },
+        'blackjack.blackjacktabletype': {
+            'Meta': {'object_name': 'BlackJackTableType'},
+            'high_bet': ('django.db.models.fields.DecimalField', [], {'max_digits': '12', 'decimal_places': '8'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'low_bet': ('django.db.models.fields.DecimalField', [], {'max_digits': '12', 'decimal_places': '8'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '128'})
         },
         'contenttypes.contenttype': {
             'Meta': {'ordering': "('name',)", 'unique_together': "(('app_label', 'model'),)", 'object_name': 'ContentType', 'db_table': "'django_content_type'"},

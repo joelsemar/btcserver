@@ -6,15 +6,34 @@
         <link rel="icon" 
       type="image/png" 
       href="/static/images/favicon.ico">
-	  <link href="{{MEDIA_URL}}css/reset.css" rel="stylesheet" type="text/css" />
+	  <script type='application/javascript' src="{{MEDIA_URL}}js/jquery-1.5.1.min.js">
+        </script>
+	  <script src = '{{MEDIA_URL}}/js/utils.js' type="application/javascript">
+        </script>
 	  <link href="{{MEDIA_URL}}css/base.css" rel="stylesheet" type="text/css" />
 	  <script type = 'application/javascript'>
-	  	var domain = '{{domain}}' 
+	  	var domain = '{{domain}}'
+		var curr_bal = '{{balance}}'
+		var name = '{{name}}';
 	  </script>
 	  {% endblock head %}
     </head>
     <body>
         {% block content %}
-		{% endblock content %}    	
+		{% endblock content %}
+		{% if request.user.is_authenticated %}
+		<div id='bottom_toolbar' class="base_container">
+			{% if table %}
+             <div id='leave_table_button' class='buttonstyle' onclick="leave_table()" >
+                Leave Table
+             </div>
+             {% endif %}
+			 <div id="balance_label">
+			 	{{name}}: <span id="acct_bal">{{balance}}</span> BTC
+			  </div>
+			 
+			 
+		</div>
+		{% endif %}    	
     </body>
 </html>

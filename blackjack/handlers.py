@@ -1,8 +1,9 @@
 from webservice_tools.utils import BaseHandler
 from webservice_tools.decorators import login_required
-from backend.models import Player, Seat
-from blackjack.models import BlackJackTable, BlackJackTableType
-
+from backend.models import Player, Seat, Card
+from blackjack.models import BlackJackHand, BlackJackTable, BlackJackTableType
+from backend.handlers import BaseCardsHandler
+from decimal import *
 
 class BlackJackTablesHandler(BaseHandler):
     allowed_methods = ('GET',)
@@ -47,16 +48,22 @@ class BlackJackTableHandler(BaseHandler):
         API Handler: POST /blackjack/table/{id}
         PARMS:
             id [id] identifier for the type of table you'd like to create
+            name [string] Name for this table
         """
         try:
             table_type = BlackJackTableType.objects.get(id=id)
         except BlackJackTableType.DoesNotExist:
             return response.send(errors='Invalid table type')
         
-        table = BlackJackTable.objects.create(type=table_type)
+        name = request.POST.get('name')
+        if not name:
+            return response.send(errors="Please provide a name")
+        
+        table = BlackJackTable.objects.create(type=table_type, name=name)
         seat = table.available_seats[0]
         seat.player = request.user.get_profile()
         seat.save()
+        response.set(table_id=table.id)
         return response.send()
         
 
@@ -68,7 +75,7 @@ class BlackJackTableHandler(BaseHandler):
         Params:
           id [id] id of the table you are trying to join
         """
-        player=request.user.get_profile()
+        player = request.user.get_profile()
         try:
             table = BlackJackTable.objects.get(id=id)
         except BlackJackTable.DoesNotExist:
@@ -81,7 +88,7 @@ class BlackJackTableHandler(BaseHandler):
         try:
             current_seat = Seat.objects.get(player=player)
             return response.send(errors='You appear to be already setting at Table %s,\
-                                         if this is not right, try logging out and logging back in.' %  current_seat.name)
+                                         if this is not right, try logging out and logging back in.' % current_seat.table.name)
         except Seat.DoesNotExist:
             pass
         
@@ -90,6 +97,26 @@ class BlackJackTableHandler(BaseHandler):
         seat.save()
         return response.send(status=201)
 
+    @login_required
+    def delete(self, request, id, response):
+        """
+        Leave Table
+        API Handler: DELETE /blackjack/table/{id}
+        """
+        player = request.user.get_profile()
+        try:
+            table = BlackJackTable.objects.get(id=id)
+        except BlackJackTable.DoesNotExist:
+            return response.send(errors="Table not found", status=404)
+        
+        seats = table.seats
+        try:
+            current_seat = [s for s in seats if s.player == player][0]
+        except IndexError:
+            return response.send()
+        current_seat.player = None
+        current_seat.save()
+        return response.send()
 
 class BlackJackTableTypesHandler(BaseHandler):
     allowed_methods = ('GET',)
@@ -102,3 +129,84 @@ class BlackJackTableTypesHandler(BaseHandler):
         """
         response.set(types=BlackJackTableType.objects.all())
         return response.send()
+
+
+class CardsHandler(BaseCardsHandler):
+    HAND_MODEL = BlackJackHand
+        
+        
+class PlayerActionHandler(BaseHandler):
+    allowed_methods = ('POST',)
+    possible_actions = ('hit', 'stand', 'double', 'split', 'bet')
+    
+    def create(self, request, id, action, response):
+        """
+        API Handler: POST /blackjack/table/{id}/{action}
+        
+        Params:
+            @amount[decimal] amount to bet, to 8 digits
+        """
+        player = request.user.get_profile()
+        if action not in self.possible_actions:
+            return response.send(status=404)
+        
+        try:
+            table = BlackJackTable.objects.get(id=id)
+        except BlackJackTable.DoesNotExist:
+            return response.send(errors="Not found", status=404)
+        
+        try:
+            player_seat = [s for s in table.seats if s.player == player][0]
+        except IndexError:
+            return response.send(errors="You aren't sitting at that table", status=500)
+        
+        if action != 'bet' and (table.current_turn != player_seat):
+            return response.send(errors="It's not your turn!", status=505)
+        
+        return getattr(self, action)(request, response, player, table)
+    
+    def bet(self, request, response, player, table):
+        amount = request.POST.get('amount')
+        try:
+            if  Decimal(amount) > player.balance:
+                return response.send(errors="Insufficient funds", status=500)
+        except InvalidOperation:
+            return response.send(errors="Invalid Amount", status=505)
+        
+        round = table.current_round
+        if round and round.taking_bets:
+            try:
+                BlackJackHand.objects.get(player=player, round=round)
+                return response.send(errors="You've already bet on this hand")
+            except BlackJackHand.DoesNotExist:
+                BlackJackHand.objects.create(player=player, round=round, bet=amount)
+                return response.send()
+        response.set(available_actions=['hit', 'stand', 'double'])
+        return response.send(status=500)
+    
+    def hit(self, request, response, player, table):
+        available_actions = []
+        try:
+            current_hand = BlackJackHand.objects.get(player=player, round=table.current_round, round__closed=False)
+        except BlackJackHand.DoesNotExist:
+            return response.send(status=404)
+        
+        if not current_hand.busted:
+            new_card = table.pull_cards(1)[0]
+            table.save()
+            current_hand.add_card(new_card)
+            if current_hand.busted:
+                available_actions=['hit', 'stand',]
+                
+        else:
+            response.addErrors('Busted')
+        response.set(available_actions=available_actions)
+        return response.send()
+    
+    def stand(self, request, response, player, table):
+        table.next_turn()
+        response.set(available_actions=[])
+        return response.send()
+    
+            
+            

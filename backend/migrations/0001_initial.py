@@ -13,14 +13,16 @@ class Migration(SchemaMigration):
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('public', self.gf('django.db.models.fields.BooleanField')(default=True)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=32)),
-            ('description', self.gf('django.db.models.fields.TextField')()),
+            ('deck', self.gf('django.db.models.fields.TextField')(default='')),
+            ('current_turn', self.gf('django.db.models.fields.related.ForeignKey')(related_name='playing_at', null=True, to=orm['backend.Seat'])),
         ))
         db.send_create_signal('backend', ['Table'])
 
         # Adding model 'Player'
         db.create_table('backend_player', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
+            ('user', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['auth.User'], unique=True)),
+            ('handle', self.gf('django.db.models.fields.CharField')(default='', max_length=32, blank=True)),
             ('show_animations', self.gf('django.db.models.fields.BooleanField')(default=True)),
             ('payout_address', self.gf('django.db.models.fields.CharField')(max_length=64)),
             ('account_name', self.gf('django.db.models.fields.CharField')(default='', unique=True, max_length=512, blank=True)),
@@ -30,10 +32,13 @@ class Migration(SchemaMigration):
         # Adding model 'Card'
         db.create_table('backend_card', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=15)),
-            ('value', self.gf('django.db.models.fields.PositiveIntegerField')()),
+            ('value', self.gf('django.db.models.fields.CharField')(max_length=15)),
+            ('suite', self.gf('django.db.models.fields.CharField')(max_length=15)),
         ))
         db.send_create_signal('backend', ['Card'])
+
+        # Adding unique constraint on 'Card', fields ['value', 'suite']
+        db.create_unique('backend_card', ['value', 'suite'])
 
         # Adding model 'Seat'
         db.create_table('backend_seat', (
@@ -44,9 +49,18 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal('backend', ['Seat'])
 
+        # Adding unique constraint on 'Seat', fields ['table', 'player']
+        db.create_unique('backend_seat', ['table_id', 'player_id'])
+
 
     def backwards(self, orm):
         
+        # Removing unique constraint on 'Seat', fields ['table', 'player']
+        db.delete_unique('backend_seat', ['table_id', 'player_id'])
+
+        # Removing unique constraint on 'Card', fields ['value', 'suite']
+        db.delete_unique('backend_card', ['value', 'suite'])
+
         # Deleting model 'Table'
         db.delete_table('backend_table')
 
@@ -91,21 +105,22 @@ class Migration(SchemaMigration):
             'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'})
         },
         'backend.card': {
-            'Meta': {'object_name': 'Card'},
+            'Meta': {'unique_together': "(('value', 'suite'),)", 'object_name': 'Card'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '15'}),
-            'value': ('django.db.models.fields.PositiveIntegerField', [], {})
+            'suite': ('django.db.models.fields.CharField', [], {'max_length': '15'}),
+            'value': ('django.db.models.fields.CharField', [], {'max_length': '15'})
         },
         'backend.player': {
             'Meta': {'object_name': 'Player'},
             'account_name': ('django.db.models.fields.CharField', [], {'default': "''", 'unique': 'True', 'max_length': '512', 'blank': 'True'}),
+            'handle': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '32', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'payout_address': ('django.db.models.fields.CharField', [], {'max_length': '64'}),
             'show_animations': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"})
+            'user': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['auth.User']", 'unique': 'True'})
         },
         'backend.seat': {
-            'Meta': {'object_name': 'Seat'},
+            'Meta': {'unique_together': "(('table', 'player'),)", 'object_name': 'Seat'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'player': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['backend.Player']", 'null': 'True'}),
             'position': ('django.db.models.fields.PositiveIntegerField', [], {}),
@@ -113,7 +128,8 @@ class Migration(SchemaMigration):
         },
         'backend.table': {
             'Meta': {'object_name': 'Table'},
-            'description': ('django.db.models.fields.TextField', [], {}),
+            'current_turn': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'playing_at'", 'null': 'True', 'to': "orm['backend.Seat']"}),
+            'deck': ('django.db.models.fields.TextField', [], {'default': "''"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '32'}),
             'public': ('django.db.models.fields.BooleanField', [], {'default': 'True'})

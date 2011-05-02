@@ -1,0 +1,75 @@
+{%extends 'base.html' %}
+{%block head %}
+{{block.super }}
+<script type="application/javascript" src="{{MEDIA_URL}}/js/jquery-ui-1.8.12.custom.min.js">
+</script>
+<script src = '{{MEDIA_URL}}/js/selectmenu.js' type="application/javascript">
+</script>
+<script type="text/javascript" src="{{MEDIA_URL}}/js/websocket_js/swfobject.js">
+</script>
+<script type="text/javascript" src="{{MEDIA_URL}}/js/websocket_js/web_socket.js">
+</script>
+<script src = '{{MEDIA_URL}}/js/table.js' type="application/javascript">
+</script>
+<link rel="stylesheet" type="text/css" media="screen" href="{{MEDIA_URL}}css/ui-darkness/jquery-ui-1.8.12.custom.css" />
+<link rel="stylesheet" type="text/css" media="screen" href="{{MEDIA_URL}}css/selectmenu.css" />
+
+
+
+<script type='application/javascript'>
+	var user_id = {{request.user.id}}
+    $(document).ready(function(){
+        $('select#table_type_selector').selectmenu({
+                style:'dropdown', 
+                menuWidth: 400,
+				width:400
+            });
+			
+    });
+</script>
+{%endblock head %}
+{%block content %}
+{% if table%}
+  {% with table_id as table_id  %}
+   {%include 'blackjack/table/_table.html' %}
+   {% endwith %}
+ {%else %}
+<div class="base_container" id='new_table_form'>
+    <div class='formitemcontainer'>
+        <div class ='formlabel'>
+            Table name:
+        </div>
+        <div class = 'forminput'>
+            <input type='text' id='table_name'>
+        </div>
+    </div>
+    <div class='formitemcontainer'>
+        <div class ='formlabel'>
+            Type:
+        </div>
+        <div class = 'forminput'>
+            <select id= 'table_type_selector'>
+                {% for type in table_types %}<option value="{{type.id}}">{{type.name}}(Min: {{type.low_bet|floatformat:4}} Max: {{type.high_bet|floatformat:4}})</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+	<div class='formitemcontainer'>
+        <div class ='formlabel'>
+            Public:
+        </div>
+        <div class = 'forminput'>
+            <input type='checkbox' checked id="table_is_public"/>
+        </div>
+    </div>
+	<div id="button_space">
+		  <div id ="cancel_add_new_table_button" class='buttonstyle' onclick="load_page('/blackjack/tables');">
+                Cancel
+            </div>
+            <div id ="add_new_table_button" class='buttonstyle' onclick="create_table();">
+                Create
+            </div>
+        </div>
+</div>
+{% endif %}
+{% endblock content %}

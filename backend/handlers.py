@@ -2,7 +2,7 @@ from webservice_tools.apps.user.handlers import GenericUserHandler
 from webservice_tools.utils import BaseHandler
 from webservice_tools.decorators import login_required
 from decimal import InvalidOperation
-from backend.models import Player
+from backend.models import Card, Player
 
 
 class UserHandler(GenericUserHandler):
@@ -31,5 +31,20 @@ class AccountWithdrawalHandler(BaseHandler):
             return response.send(errors='Invalid withdrawal amount', status=500)
         return response.send()
             
-    
-    
+class BaseCardsHandler(BaseHandler):
+    allowed_methods = ('GET',)
+    model = Card
+    extra_fields = ('id', 'name', 'image_url')
+    @login_required
+    def read(self, request, response):
+        player = request.user.get_profile()
+        cards = []
+        try:
+            current_hand = self.HAND_MODEL.objects.get(player=player, round__closed=False)
+            cards = current_hand.get_cards()
+        except self.HAND_MODEL.DoesNotExist:
+            pass
+        
+        response.set(cards=cards)
+        return response.send()
+        

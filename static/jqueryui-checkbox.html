@@ -1,0 +1,96 @@
+<!DOCTYPE html
+	 PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+		<title>jQuery UI Example Page</title>
+		<link type="text/css" rel="stylesheet" href="http://jqueryui.com/themes/base/ui.all.css" />
+		<link type="text/css" rel="stylesheet" href="ui.checkbox.css" />
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/jquery-ui.min.js"></script>
+		<script type="text/javascript" src="ui.checkbox.js"></script>
+		<script type="text/javascript">
+			// Demo stuff
+			$(function(){
+
+				// Customize the themeswitcher element...
+				$('#switcher').themeswitcher({onSelect:function(){
+					$().trigger('ui-theme-switch');
+				}});
+
+				$("form#ui input").filter(":checkbox,:radio").checkbox();
+				$("#ui-test3, #ui-radio3").checkbox("disable");
+				$("#ui-test4").parent(".ui-checkbox").addClass("ui-state-highlight");
+				$("#ui-radio4").parent(".ui-radio").addClass("ui-state-highlight");
+				$("#ui-test5").parent(".ui-checkbox").addClass("ui-state-error");
+				$("#ui-radio5").parent(".ui-radio").addClass("ui-state-error");
+				//$("form#default input").filter(":checkbox,:radio").addClass("ui-checkbox");
+				$("#default-test3, #default-radio3").attr("disabled","disabled");
+
+				$("#toggle").click(function() {
+					var jq = $("#ui-test3, #ui-radio3");
+					if (jq.filter(":disabled").length)
+						jq.checkbox("enable");
+					else
+						jq.checkbox("disable");
+					return false;
+				});
+
+			});
+		</script>
+		<style type="text/css">
+			body {margin: 50px;}
+			fieldset { margin: 20px auto 20px auto; width: 60%; padding: 10px; }
+			legend { margin: 0.2em 0px 0.2em 20px; padding: 4px; }
+			button { float: right; }
+			#switcher {margin: 20px; float: right; }
+		</style>
+	</head>
+	<body>
+
+	<script type="text/javascript" src="http://jqueryui.com/themeroller/themeswitchertool/"></script>
+	<div id="switcher"></div><br style="clear:both" />
+
+	<form id="ui"><fieldset class="ui-widget ui-widget-content ui-corner-all">
+	<legend class="ui-widget ui-widget-header ui-corner-all">With jQuery UI checkbox</legend>
+	<label for="test1">Test 1</label>
+	<input type="checkbox" name="test1" value="test" id="ui-test1"/>
+	<label for="test2">Test 2</label>
+	<input type="checkbox" name="test2" value="test" id="ui-test2" checked="checked"/>
+	<label for="test3">Test 3</label>
+	<input type="checkbox" name="test3" value="test" id="ui-test3"/>
+	<label for="test3">Test 4</label>
+	<input type="checkbox" name="test4" value="test" id="ui-test4"/>
+	<label for="test3">Test 5</label>
+	<input type="checkbox" name="test5" value="test" id="ui-test5"/><br />
+	<label for="radio1">Radio 1</label>
+	<input type="radio" name="radio" value="test1" id="ui-radio1"/>
+	<label for="radio2">Radio 2</label>
+	<input type="radio" name="radio" value="test2" id="ui-radio2" checked="checked"/>
+	<label for="radio3">Radio 3</label>
+	<input type="radio" name="radio" value="test2" id="ui-radio3"/>
+	<label for="radio3">Radio 4</label>
+	<input type="radio" name="radio" value="test2" id="ui-radio4"/>
+	<label for="radio3">Radio 5</label>
+	<input type="radio" name="radio" value="test2" id="ui-radio5"/>
+	<button id="toggle">toggle disabled</button></fieldset></form>
+
+	<form id="default"><fieldset class="ui-widget ui-widget-content ui-corner-all">
+	<legend class="ui-widget ui-widget-header ui-corner-all">Native widgets</legend>
+	<label for="test1">Test 1</label>
+	<input type="checkbox" name="test1" value="test" id="default-test1"/>
+	<label for="test2">Test 2</label>
+	<input type="checkbox" name="test2" value="test" id="default-test2" checked="checked"/>
+	<label for="test3">Test 3</label>
+	<input type="checkbox" name="test3" value="test" id="default-test3"/><br />
+	<label for="radio1">Radio 1</label>
+	<input type="radio" name="radio" value="test1" id="default-radio1"/>
+	<label for="radio2">Radio 2</label>
+	<input type="radio" name="radio" value="test2" id="default-radio2" checked="checked"/>
+	<label for="radio3">Radio 3</label>
+	<input type="radio" name="radio" value="test2" id="default-radio3"/>
+	</fieldset></form>
+
+	</body>
+</html>

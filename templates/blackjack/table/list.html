@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block head %}
+{{block.super }}
+<script type='text/javascript'>
+    function join_table(table_id){
+        $.ajax({
+            url: '/btcserver/blackjack/table/' + table_id,
+            headers: {
+                'Accept': 'application/json'
+            },
+            type: 'PUT',
+            success: function(response){
+                window.location = '/blackjack/table';
+            }
+        });
+    }
+</script>
+{% endblock head %}
+{% block content %}
+<div id="table_list" class='base_container'>
+    <h2 id='table_title'>Current Tables</h2>
+    <h3 id='table_title_sub_title'>Click to Join</h3>
+    <table id="main_table">
+        <thead>
+            <tr>
+                <th>
+                    Name
+                </th>
+                <th>
+                    Description
+                </th>
+                <th>
+                    Players
+                </th>
+                <th>
+                    Low Bet
+                </th>
+                <th>
+                    High Bet
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for table in tables %}
+            <tr onclick="join_table({{table.id}})">
+                <td>
+                    {{table.name}}
+                </td>
+                <td>
+                    {{table.description}}
+                </td>
+                <td>
+                    {{table.num_players}} / {{table.num_seats}}
+                </td>
+                <td>
+                    {{table.low_bet}}
+                </td>
+                <td>
+                    {{table.high_bet}}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div id="button_space">
+        <div id ="add_new_table_button" class='buttonstyle' onclick="load_page('/blackjack/table');">
+            New Table
+        </div>
+    </div>
+</div>
+{% endblock content %}
