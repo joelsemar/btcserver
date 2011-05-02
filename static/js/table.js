@@ -94,7 +94,8 @@ function Game(table_id){
     this.update_dealer = function(cards){
         for (var i = 0; i < cards.length; i++) {
             if (!that.dealers_hand.includes(cards[i])) {
-                this.deal_dealer_card(cards[i])
+                that.dealers_hand.push(cards[i]);
+                this.deal_dealer_card(cards[i]);
             }
             
         }
