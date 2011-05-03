@@ -40,7 +40,7 @@ class BaseCardsHandler(BaseHandler):
         player = request.user.get_profile()
         cards = []
         try:
-            current_hand = self.HAND_MODEL.objects.get(player=player, round__closed=False)
+            current_hand = self.HAND_MODEL.objects.get(player=player, round__closed=False, resolved=False)
             cards = current_hand.get_cards()
         except self.HAND_MODEL.DoesNotExist:
             pass

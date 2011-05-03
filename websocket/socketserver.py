@@ -48,10 +48,10 @@ class ClientConnectionManager(xmlrpc.XMLRPC):
     
     def xmlrpc_update_user(self, response):
         table_id = response.get('table_id')
-        user_id = response.get('user_id')
-        assert user_id
+        player_id = response.get('player_id')
+        assert player_id
         game_handlers = self.registered_handlers.get(self.KEY_FORMAT % table_id)
-        game_handlers = [g for g in game_handlers if g.user_id == user_id]
+        game_handlers = [g for g in game_handlers if g.player_id == player_id]
         for handler in game_handlers:        
             handler.send(response)
     
@@ -63,7 +63,7 @@ class ClientConnectionManager(xmlrpc.XMLRPC):
             handlers.append(handler)
         if self._cached_game_state:
             payload = self._cached_game_state
-            payload['user_id'] = handler.user_id
+            payload['player_id'] = handler.player_id
             handler.send(payload)
 
     def deregister(self, handler):
@@ -85,7 +85,7 @@ class ClientHandler(WebSocketHandler):
         client_connection_manager.register(self)
     
     def send(self, data):
-        print 'Sending: %s to %s' % (data, self.user_id)
+        print 'Sending: %s to %s' % (data, self.player_id)
         self.transport.write(simplejson.dumps(data))
 
     def frameReceived(self, frame):
@@ -95,10 +95,10 @@ class ClientHandler(WebSocketHandler):
             print frame
             
         table_id = data.get('table_id')
-        user_id = data.get('user_id')
-        if table_id and user_id:
+        player_id = data.get('player_id')
+        if table_id and player_id:
             self.table_id = table_id
-            self.user_id = user_id
+            self.player_id = player_id
             self.register()
             self.transport.write(simplejson.dumps(dict(registration_success=True)))
             

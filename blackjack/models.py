@@ -33,7 +33,13 @@ class BlackJackTable(Table):
         dealer_up_cards = [Card.get_face_down()]
         for card in dealer_cards[1:]:
             dealer_up_cards.append(card)
-        ret['dealer_up_cards'] = dealer_up_cards 
+        ret['dealer_up_cards'] = dealer_up_cards
+        all_hands = BlackJackHand.objects.filter(round__table=self)
+        for hand in all_hands:
+            player = [p for p in ret['players'] if p['player_id'] == hand.player_id][0]
+            player['cards'] = hand.get_cards()
+            
+         
         return ret
     
     @cached_property
@@ -60,17 +66,9 @@ class BlackJackTable(Table):
 
         for _ in range(consts.NUM_CARDS_EACH_BLACKJACK):
             for hand in hands:
-                hand.add_card(self.pull_cards(1)[0])
+                hand.add_card(self.pull_card())
         
         self.save()
-
-        for hand in hands:
-            if hand.score == 21 and hand.player:
-                player = hand.player
-                data = {'player_id': player.user_id, 'name': player.name }
-                conn = ClientConnection(data=data, table_id=self.id, action='blackjack')
-                conn.send()
-                
         self.update_game()
     
     
@@ -112,8 +110,8 @@ class BlackJackTable(Table):
     
     def deal_dealer_cards(self):
         dealer_hand = self.current_round.dealers_hand
-        while (not dealer_hand.busted and dealer_hand.score < 17):
-            new_card = self.pull_cards(1)[0]
+        while (dealer_hand.score < 17) and (not dealer_hand.busted):
+            new_card = self.pull_card()
             dealer_hand.add_card(new_card)
         self.save()
         data = dealer_hand.get_cards() 
@@ -124,22 +122,18 @@ class BlackJackTable(Table):
         
     def resolve_bets(self):
         dealer = self.current_round.dealers_hand
-        hands = BlackJackHand.objects.filter(round=self.current_round)
+        hands = BlackJackHand.objects.filter(round=self.current_round, resolved=False)
         for hand in hands:
             if hand.has_blackjack and not dealer.has_blackjack:
                 hand.blackjack()
                 continue
             
-            elif (hand.score == dealer.score) or (hand.busted and dealer.busted):
+            elif (hand.score == dealer.score):
                 hand.push()
                 continue
-                
-            elif dealer.busted and (not hand.busted):
-                hand.won()
-                continue
             
-            elif hand.busted and (not dealer.busted):
-                hand.lost()
+            elif dealer.busted:
+                hand.won()
                 continue
             
             elif hand.score > dealer.score:
@@ -173,14 +167,18 @@ class BlackJackHand(BaseHand):
     dealers_hand = models.BooleanField(default=False)
     
     def save(self, *args, **kwargs):
+        check_hand_count = False
+        if not self.id:
+            check_hand_count = True
         super(BlackJackHand, self).save(*args, **kwargs)
-        round = self.round
-        table = round.table
-        hand_count = BlackJackHand.objects.filter(round=self.round, dealers_hand=False).count()
-        if hand_count == table.num_players and table.num_players and not self.get_cards():
-            round.taking_bets = False
-            round.save()
-            table.initial_deal()
+        if check_hand_count:
+            round = self.round
+            table = round.table
+            hand_count = BlackJackHand.objects.filter(round=self.round, dealers_hand=False).count()
+            if hand_count == table.num_players and table.num_players:
+                round.taking_bets = False
+                round.save()
+                table.initial_deal()
         
     @property
     def score(self):
@@ -200,25 +198,35 @@ class BlackJackHand(BaseHand):
         card_ids.append(card['id'])
         self.set_card_ids(card_ids)
         self.save()
-        if not self.dealers_hand:
-            conn = ClientConnection(data=card, table_id=self.round.table_id,
-                                    user_id=self.player.user_id, action='deal_card')
+        
+        if self.dealers_hand:
+            card['dealt_to'] = 'dealer'
+        else:
+            player_id = self.player_id
+            card['dealt_to'] = player_id
+            if self.busted:
+                self.lost()
+                self.round.table.next_turn()
+                
+        if not (self.dealers_hand and self.num_cards == 1):
+            conn = ClientConnection(data=card, table_id=self.round.table_id, action='deal_card')
             conn.send()
             
-            if self.busted:
-                self.round.table.next_turn()
+            
             
 
     def won(self):
         player = self.player
         player.credit(self.bet)
         player.update_balance(self.round.table_id, str(self.bet))
+        self.resolve()
         
         
     def lost(self):
         player = self.player
         player.debit(self.bet)
         player.update_balance(self.round.table_id, str(self.bet))
+        self.resolve()
         
         
     def blackjack(self):
@@ -226,9 +234,13 @@ class BlackJackHand(BaseHand):
         amount = Decimal('1.5') * self.bet
         player.credit(amount)
         player.update_balance(self.round.table_id, str(amount))
-    
+        self.resolve()
+        data = {'player_id': self.player_id, 'name': player.name }
+        conn = ClientConnection(data=data, table_id=self.round.table_id, action='blackjack')
+        conn.send()
+        
     def push(self):
-        pass
+        self.resolve()
     
     @property
     def has_blackjack(self):

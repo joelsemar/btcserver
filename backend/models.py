@@ -17,7 +17,8 @@ class Table(models.Model):
     deck = models.TextField(default='[]', editable=False)
     current_turn = models.ForeignKey('backend.Seat', related_name='playing_at', null=True)
     def dict(self):
-        return {'name': self.name, }
+        return {'name': self.name, 'id': self.id,
+                'public': self.public,}
     
     def save(self, *args, **kwargs):
         need_seats = False
@@ -29,15 +30,14 @@ class Table(models.Model):
                 Seat.objects.create(position=p + 1, table=self)
                 
     def get_game_state(self):
-        ret = {'table_id': self.id,
-               'data': self.dict()}
+        ret = self.dict()
         players = []
         for seat in self.seats:
             players.append({'seat_id': seat.id,
                             'player_name': seat.player.name if seat.player else None,
-                            'user_id': seat.player.user_id if seat.player else None,
-                            'current_turn': self.current_turn_id == self.id})
-        ret['data']['players'] = players
+                            'player_id': seat.player.id if seat.player else None,
+                            'current_turn': self.current_turn_id == seat.id})
+        ret['players'] = players
         return ret
     
     
@@ -63,6 +63,8 @@ class Table(models.Model):
         self.deck = simplejson.dumps(deck)
         return [c for c in consts.CARD_DATA if c['id'] in cards]
     
+    def pull_card(self):
+        return self.pull_cards(1)[0]
     
     @property
     def num_decks(self):
@@ -149,7 +151,7 @@ class Player(BaseProfile):
     def update_balance(self, table_id, balance_change):
         data = {'balance': str(self.balance), 'balance_change': balance_change}
         conn = ClientConnection(data=data, table_id=table_id,
-                                user_id=self.user_id, action='update_balance')
+                                player_id=self.id, action='update_balance')
         conn.send()
             
 
@@ -203,6 +205,8 @@ class BaseHand(models.Model):
     cards = models.CharField(max_length=128, default='[]')
     bet = models.DecimalField(max_digits=12, decimal_places=8, null=True)
     player = models.ForeignKey(Player, null=True)
+    resolved = models.BooleanField(default=False)
+    
     class Meta:
         abstract = True
     
@@ -215,3 +219,10 @@ class BaseHand(models.Model):
     def get_cards(self):
         return [c for c in consts.CARD_DATA if c['id'] in self.get_card_ids()]
     
+    @property
+    def num_cards(self):
+        return len(self.get_card_ids())
+    
+    def resolve(self):
+        self.resolved = True
+        self.save()

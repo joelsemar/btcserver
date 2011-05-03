@@ -13,7 +13,7 @@ function Server(table_id){
             var payload = {
                 action: 'register',
                 table_id: table_id,
-                user_id: user_id
+                player_id: player_id
             }
             ws.send(JSON.stringify(payload));
         };
@@ -69,16 +69,13 @@ function Game(table_id){
     this.table_id = table_id;
     this.players = []
     this.dealers_hand = []
-    this.screen_init = false
     var that = this
     this.current_balance = curr_bal;
     this.player_name = name;
+    this.player_id = player_id;
     this.callback = function(new_data){
         if (new_data.action) {
             that[new_data.action](new_data.data)
-        }
-        if (!this.screen_init) {
-            this.initialize_screen(new_data)
         }
         else {
             this.update(new_data)
@@ -92,27 +89,25 @@ function Game(table_id){
         
     }
     this.update_dealer = function(cards){
+        $('#dealer_cards').html('')
         for (var i = 0; i < cards.length; i++) {
-            if (!that.dealers_hand.includes(cards[i])) {
-                this.deal_dealer_card(cards[i])
-            }
+            this.deal_dealer_card(cards[i])
             
         }
         
     }
     
-    this.initialize_screen = function(data){
-        return true
-        for (var i = 0; i < data.players.length; i++) {
-        
-        
-        }
-        this.screen_init = true;
-    }
     this.deal_card = function(card_data){
         if (card_data) {
+            if (card_data.dealt_to == 'dealer') {
+                this.deal_dealer_card(card_data)
+            }
+            else 
+                if (card_data.dealt_to == self.player_id) {
+                    $('#cards').append(this.get_card_html(card_data))
+                }
             hide_bid_form();
-            $('#cards').append(this.get_card_html(card_data))
+            
         }
         
     }
@@ -147,19 +142,20 @@ function Game(table_id){
     this.blackjack = function(data){
         tool_bar_alert('BlackJack!');
     }
-	this.update_balance = function(data){
-		var new_balance = data.balance;
-		var balance_change = data.balance_change;
-		current_balance = app.server.game.current_balance
-		$("#acct_bal").html(new_balance)
-		if (current_balance > new_balance){
-			tool_bar_alert("-" + balance_change, true)
-		}
-		else if (current_balance < new_balance){
-			tool_bar_alert('+' + balance_change, false)
-		}
-		app.server.game.current_balance = new_balance;
-	}
+    this.update_balance = function(data){
+        var new_balance = data.balance;
+        var balance_change = data.balance_change;
+        current_balance = app.server.game.current_balance
+        $("#acct_bal").html(new_balance)
+        if (current_balance > new_balance) {
+            tool_bar_alert("-" + balance_change, true)
+        }
+        else 
+            if (current_balance < new_balance) {
+                tool_bar_alert('+' + balance_change, false)
+            }
+        app.server.game.current_balance = new_balance;
+    }
     
     this.fetch_cards = function(){
         $.ajax({
@@ -171,14 +167,17 @@ function Game(table_id){
             success: function(response){
                 var cards = response.data.cards;
                 if (cards.length) {
+                    for (var i = 0; i < cards.length; i++) {
+						card = cards[i];
+						card.dealt_to = app.server.game.player_id
+                        that.deal_card(card);
+                    }
                     hide_bid_form();
                 }
                 else {
                     show_bid_form();
                 }
-                for (var i = 0; i < cards.length; i++) {
-                    that.deal_card(cards[i])
-                }
+                
                 
             }
         });
@@ -222,18 +221,18 @@ function bet_callback(response){
 }
 
 function tool_bar_alert(msg, error){
-	var options  = {}
-	if (error){
-		options.color = "#ff0000"
-	}
+    var options = {}
+    if (error) {
+        options.color = "#ff0000"
+    }
     var label = $("#balance_label");
     var old_html = label.html()
     label.html(msg)
     $("#bottom_toolbar").effect("highlight", options, 2500)
     setTimeout(function(label, old_html){
-		return function(){
-		  label.html(old_html);
-		}
+        return function(){
+            label.html(old_html);
+        }
     }(label, old_html), 2500)
     
 }
@@ -266,7 +265,7 @@ function create_table(){
 }
 
 function leave_table(){
-	$.ajax({
+    $.ajax({
         url: '/btcserver/blackjack/table/' + app.server.game.table_id,
         headers: {
             'Accept': 'application/json'
@@ -288,6 +287,7 @@ function show_bid_form(){
     $("#bid_form").show()
     $('#option_panel').hide()
 }
+
 function join_table(table_id){
-	
+
 }

@@ -187,19 +187,16 @@ class PlayerActionHandler(BaseHandler):
     def hit(self, request, response, player, table):
         available_actions = []
         try:
-            current_hand = BlackJackHand.objects.get(player=player, round=table.current_round, round__closed=False)
+            current_hand = BlackJackHand.objects.get(player=player, round=table.current_round, resolved=False)
         except BlackJackHand.DoesNotExist:
             return response.send(status=404)
         
-        if not current_hand.busted:
-            new_card = table.pull_cards(1)[0]
-            table.save()
-            current_hand.add_card(new_card)
-            if current_hand.busted:
-                available_actions=['hit', 'stand',]
-                
-        else:
+        
+        current_hand.add_card(table.pull_card())
+        table.save()
+        if current_hand.busted:
             response.addErrors('Busted')
+            
         response.set(available_actions=available_actions)
         return response.send()
     
