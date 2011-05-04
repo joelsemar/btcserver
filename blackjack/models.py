@@ -163,7 +163,6 @@ class BlackJackRound(models.Model):
     
 class BlackJackHand(BaseHand):
     round = models.ForeignKey(BlackJackRound)
-    score = models.PositiveIntegerField(default=0)
     dealers_hand = models.BooleanField(default=False)
     
     def save(self, *args, **kwargs):

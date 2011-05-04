@@ -40,7 +40,8 @@ class ClientConnectionManager(xmlrpc.XMLRPC):
         
     
     def xmlrpc_update_table(self, response):
-        self._cached_game_state = response
+        if response.get('action') == 'update_game':
+            self._cached_game_state = response
         table_id = response.get('table_id')
         game_handlers = self.registered_handlers[self.KEY_FORMAT % table_id]
         for handler in game_handlers:        

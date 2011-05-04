@@ -92,7 +92,6 @@ function Game(table_id){
         $('#dealer_cards').html('')
         for (var i = 0; i < cards.length; i++) {
             this.deal_dealer_card(cards[i])
-            
         }
         
     }
