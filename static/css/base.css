@@ -18,12 +18,14 @@ select#table_type_selector {
 
 .base_container {
     filter: alpha(opacity = 60);
-    background-color: #333333;
+    background-color: #333;
     color: #fafaf2;
+	
+	
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px;
     height: auto;
-    opacity: 0.8;
+    opacity: 0.7;
     -moz-box-shadow: 4px 4px 4px black;
     -webkit-box-shadow: 4px 4px 4px black;
 }
@@ -149,7 +151,7 @@ h2#table_title {
     background-color: #555;
     -moz-box-shadow: none;
     -webkit-box-shadow: none;
-}base_container
+}
 
 .fixed_inner {
     position: fixed;
@@ -177,8 +179,6 @@ h2#table_title {
     height: 125px;
     margin: 0 auto;
     font-size: 22px;
-    opacity: 0.8;
-    background-color: #333;
     -moz-border-radius-bottomleft: 0;
     -moz-border-radius-bottomright: 0;
     -webkit-border-radius-bottomleft: 0px;

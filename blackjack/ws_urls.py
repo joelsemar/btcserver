@@ -9,9 +9,11 @@ from django.views.generic.simple import direct_to_template
 
 urlpatterns = patterns('blackjack.views',
     (r'^tables/?$', Resource(BlackJackTablesHandler)),
+    (r'^table/(?P<id>[\d]+)/game_data/?$', Resource(BlackJackGameDataHandler)),
     (r'^table/(?P<id>[\d]+)/(?P<action>[\w]+)/?$', Resource(PlayerActionHandler)),
     (r'^table/(?P<id>[\d]+)/?$', Resource(BlackJackTableHandler)),
     (r'^tabletypes/?$', Resource(BlackJackTableTypesHandler)),
     (r'^cards/?$', Resource(CardsHandler)),
+    
     
 )

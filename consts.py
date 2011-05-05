@@ -20,7 +20,10 @@ ALT_BLACK_JACK_CARD_VALUE_MAPPING = {'ace':1, 'two': 2, 'three': 3, 'four':4,
                                      'nine': 9}
 
 
+GAME_STATE_BIDDING = 'bidding'
+GAME_STATE_PLAYING = 'playing'
 
+GAME_STATE_CHOICES = ((GAME_STATE_BIDDING, 'Bidding'), (GAME_STATE_PLAYING, 'Playing'))
 
 NUM_SEATS = 5
 HAND_TYPE_CHOICES = (('blackjack', 'Black Jack'), ('holdem', 'Texas Hold em'))

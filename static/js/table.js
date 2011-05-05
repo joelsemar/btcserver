@@ -73,6 +73,23 @@ function Game(table_id){
     this.current_balance = curr_bal;
     this.player_name = name;
     this.player_id = player_id;
+    this.game_state = 'bidding';
+	
+	$.ajax({
+            url: '/btcserver/blackjack/table/{0}/game_data'.strFormat(table_id),
+            headers: {
+                'Accept': 'application/json'
+            },
+            type: 'GET',
+            success: function(response){
+                var game_data = response.data.game_data;
+				that.update_game(game_data);
+				that.init_dealer(game_data.dealer_up_cards)
+                
+            }
+        });
+	
+	
     this.callback = function(new_data){
         if (new_data.action) {
             that[new_data.action](new_data.data)
@@ -84,14 +101,28 @@ function Game(table_id){
     }
     
     this.update_game = function(game_data){
-        this.update_dealer(game_data.dealer_up_cards);
-        
+        ///this.update_dealer(game_data.dealer_up_cards);
+        this.update_game_state(game_data.game_state)
         
     }
-    this.update_dealer = function(cards){
-        $('#dealer_cards').html('')
+    
+    this.update_game_state = function(state){
+        this.state = state;
+        if (state == 'bidding') {
+            $("#bid_form").show()
+            $('#option_panel').hide()
+        }
+		else if (state == 'playing'){
+			$("#bid_form").hide()
+            $('#option_panel').show()
+		}
+    }
+    
+	this.init_dealer = function(cards){
         for (var i = 0; i < cards.length; i++) {
-            this.deal_dealer_card(cards[i])
+			var card = cards[i];
+			card.dealt_to = 'dealer';
+            this.deal_card(card)
         }
         
     }
@@ -99,45 +130,28 @@ function Game(table_id){
     this.deal_card = function(card_data){
         if (card_data) {
             if (card_data.dealt_to == 'dealer') {
-                this.deal_dealer_card(card_data)
+                $('#dealer_cards').append(this.get_card_html(card_data))
             }
             else 
                 if (card_data.dealt_to == self.player_id) {
                     $('#cards').append(this.get_card_html(card_data))
                 }
-            hide_bid_form();
             
         }
         
     }
     
     this.get_card_html = function(card_data){
-        if (card_data) {
-            return '<div class="card_slot card" ><img src="{0}" style="height:100%;" /></div>'.strFormat(card_data.image_url);
-        }
+		    var dom_id = card_data.id || "down_card";
+            return '<div class="card_slot card" id="{1}" ><img src="{0}" style="height:100%;" /></div>'.strFormat(card_data.image_url, dom_id);
         
     }
+	
+	this.flip_down_card = function(card_data){
+		$("#down_card").html('<img src="{0}" style="height:100%;" /></div>'.strFormat(card_data.image_url))
+	}
+	
     
-    this.deal_dealer_card = function(card_data){
-        $('#dealer_cards').append(this.get_card_html(card_data))
-    }
-    this.show_dealer_cards = function(cards){
-        $('#dealer_cards').html('')
-        for (var i = 0; i < cards.length; i++) {
-            delay = 0;
-            if (i > 1) {
-                delay = i * 500;
-            }
-            setTimeout(function(i){
-                return function(){
-                    app.server.game.deal_dealer_card(cards[i])
-                }
-            }(i), delay)
-            
-        }
-        show_bid_form()
-        
-    }
     this.blackjack = function(data){
         tool_bar_alert('BlackJack!');
     }
@@ -167,17 +181,11 @@ function Game(table_id){
                 var cards = response.data.cards;
                 if (cards.length) {
                     for (var i = 0; i < cards.length; i++) {
-						card = cards[i];
-						card.dealt_to = app.server.game.player_id
+                        card = cards[i];
+                        card.dealt_to = app.server.game.player_id
                         that.deal_card(card);
                     }
-                    hide_bid_form();
                 }
-                else {
-                    show_bid_form();
-                }
-                
-                
             }
         });
     }
@@ -210,7 +218,7 @@ function bet_button_handler(){
 
 function bet_callback(response){
     if (response.success) {
-        hide_bid_form();
+       $("#bid_form").hide();
     }
     else {
         error = response.errors[0]
@@ -276,17 +284,3 @@ function leave_table(){
     });
 }
 
-function hide_bid_form(){
-    $("#bid_form").hide()
-    $('#option_panel').show()
-}
-
-function show_bid_form(){
-
-    $("#bid_form").show()
-    $('#option_panel').hide()
-}
-
-function join_table(table_id){
-
-}

@@ -35,13 +35,10 @@ class ClientConnectionManager(xmlrpc.XMLRPC):
     def __init__(self, *args, **kwargs):
         self.registered_handlers = defaultdict(list)
         self.KEY_FORMAT = "TABLE_ID_%s"
-        self._cached_game_state = None
         xmlrpc.XMLRPC.__init__(self, *args, **kwargs)
         
     
     def xmlrpc_update_table(self, response):
-        if response.get('action') == 'update_game':
-            self._cached_game_state = response
         table_id = response.get('table_id')
         game_handlers = self.registered_handlers[self.KEY_FORMAT % table_id]
         for handler in game_handlers:        
@@ -62,15 +59,11 @@ class ClientConnectionManager(xmlrpc.XMLRPC):
         handlers = self.registered_handlers[key]
         if handler not in handlers:
             handlers.append(handler)
-        if self._cached_game_state:
-            payload = self._cached_game_state
-            payload['player_id'] = handler.player_id
-            handler.send(payload)
 
     def deregister(self, handler):
         key = self.KEY_FORMAT % handler.table_id
         handlers = self.registered_handlers[key]
-        if handler  in handlers:
+        if handler in handlers:
             handlers.remove(handler)
 
 

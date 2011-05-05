@@ -206,4 +206,16 @@ class PlayerActionHandler(BaseHandler):
         return response.send()
     
             
-            
+
+class BlackJackGameDataHandler(BaseHandler):
+    allowed_methods = ('GET',)
+    
+    @login_required
+    def read(self, request, id, response):
+        try:
+            table = BlackJackTable.objects.get(id=id)
+        except BlackJackTable.DoesNotExist:
+            response.send(errors='Not found', status=404)
+        
+        response.set(game_data=table.get_game_data())
+        return response.send()

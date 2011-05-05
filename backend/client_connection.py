@@ -21,7 +21,7 @@ class ClientConnection(object):
         return {'action': self.action, 'data': self.data,
                 'table_id': self.table_id, 'player_id': self.player_id}
 
-    def send(self):
+    def notify(self):
         if self.payload.get('player_id'):
             self.rpc.update_user(self.payload)
         else:

@@ -23,7 +23,7 @@ def table(request):
         context['table_types'] = BlackJackTableType.objects.all()
         
     else:
-        context['table'] = table.get_game_state()
+        context['table'] = table.get_game_data()
         
     return direct_to_template(request, 'blackjack/table/table.html',
                                extra_context=context)

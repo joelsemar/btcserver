@@ -1,13 +1,12 @@
-from decimal import *
+from decimal import Decimal
 import simplejson
-from webservice_tools import db_utils, uuid, utils
+from webservice_tools import db_utils, utils
 import consts
 from django.db import models
-from django.core.cache import cache
 from webservice_tools.apps.user.models import BaseProfile
 from webservice_tools.decorators import cached_property
 from backend import bitcoinrpc
-from backend.client_connection import ClientConnection
+from backend.client_connection import ClientConnection as Client
 import random
 
 # Create your models here.
@@ -18,7 +17,7 @@ class Table(models.Model):
     current_turn = models.ForeignKey('backend.Seat', related_name='playing_at', null=True)
     def dict(self):
         return {'name': self.name, 'id': self.id,
-                'public': self.public,}
+                'public': self.public, }
     
     def save(self, *args, **kwargs):
         need_seats = False
@@ -29,7 +28,7 @@ class Table(models.Model):
             for p in range(consts.NUM_SEATS):
                 Seat.objects.create(position=p + 1, table=self)
                 
-    def get_game_state(self):
+    def get_game_data(self):
         ret = self.dict()
         players = []
         for seat in self.seats:
@@ -150,9 +149,9 @@ class Player(BaseProfile):
     
     def update_balance(self, table_id, balance_change):
         data = {'balance': str(self.balance), 'balance_change': balance_change}
-        conn = ClientConnection(data=data, table_id=table_id,
+        client = Client(data=data, table_id=table_id,
                                 player_id=self.id, action='update_balance')
-        conn.send()
+        client.notify()
             
 
 class Card(models.Model):
