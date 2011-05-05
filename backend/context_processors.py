@@ -5,7 +5,7 @@ hostname = gethostname()
 
 def base(request):
     if hostname == 'bitcoinpalace':
-        context = {'domain': '127.0.0.1'}
+        context = {'domain': 'bitcoinpalace.com'}
     else:
         context = {'domain': '127.0.0.1'}
     if request.user.is_authenticated():
