@@ -152,7 +152,6 @@ function Game(table_id){
         html = "<span class='player_tab_name'>";
         html += player.player_name;
         html += "<div class='player_tab_cards'>";
-        debugger;
 		if (player.cards) {
 			for (var i = 0; i < player.cards.length; i++) {
 				var img_class = 'player_card';
