@@ -147,6 +147,7 @@ function Game(table_id){
             }
             else {
                 tab.html('Empty Seat');
+				tab.removeClass('current_turn');
             }
         }
         if (!$('.current_turn').length && that.game_state == 'playing' && player_data.length >1) {
@@ -248,7 +249,9 @@ function Game(table_id){
                 if (callback) {
                     callback(response);
                 }
-                
+                if (response.errors.length){
+					tool_bar_alert(response.errors[0], true)
+				}
             }
         })
         
