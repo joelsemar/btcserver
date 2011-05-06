@@ -84,7 +84,10 @@ function Game(table_id){
         success: function(response){
             var game_data = response.data.game_data;
             that.update_game(game_data);
-            that.init_dealer(game_data.dealer_up_cards)
+            if (game_data.dealer_up_cards) {
+                that.init_dealer(game_data.dealer_up_cards)
+            }
+            
             
         }
     });
@@ -107,7 +110,7 @@ function Game(table_id){
     }
     
     this.update_game_state = function(state){
-        this.state = state;
+        that.game_state = state;
         if (state == 'bidding') {
             $("#bid_form").show()
             $('#option_panel').hide()
@@ -135,16 +138,20 @@ function Game(table_id){
             var tab = $("#player_tab_pos_{0}".strFormat(player.position));
             if (tab && player.player_id) {
                 tab.html(this.player_tab_html(player));
-				if (player.current_turn){
-					tab.addClass('current_turn');
-				}
-				else{
-					tab.removeClass('current_turn');
-				}
+                if (player.current_turn) {
+                    tab.addClass('current_turn');
+                }
+                else {
+                    tab.removeClass('current_turn');
+                }
             }
             else {
                 tab.html('Empty Seat');
             }
+        }
+        if (!$('.current_turn').length && that.game_state == 'playing' && player_data.length >1) {
+            $("#option_panel").effect("highlight", {}, 2500)
+            
         }
         
     }
@@ -152,13 +159,13 @@ function Game(table_id){
         html = "<span class='player_tab_name'>";
         html += player.player_name;
         html += "<div class='player_tab_cards'>";
-		if (player.cards) {
-			for (var i = 0; i < player.cards.length; i++) {
-				var img_class = 'player_card';
-				
-				html += "<img class='player_card' src='{0} />".strFormat(player.cards[i].image_url);
-			}
-		}
+        if (player.cards) {
+            for (var i = 0; i < player.cards.length; i++) {
+                var img_class = 'player_card';
+                
+                html += "<img class='player_card' src='{0} />".strFormat(player.cards[i].image_url);
+            }
+        }
         html += "</div>";
         html += "</span>";
         return html

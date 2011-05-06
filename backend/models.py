@@ -199,10 +199,6 @@ class Seat(models.Model):
         unique_together = ('table', 'player')
         ordering = ('position',)
         
-    def save(self, *args, **kwargs):
-        if  self.id and db_utils.isDirty(self, 'player'):
-            self.table.update_game()
-        super(Seat, self).save(*args, **kwargs)
         
 class BaseHand(models.Model):
     cards = models.TextField(max_length=512, default='[]')

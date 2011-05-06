@@ -95,6 +95,7 @@ class BlackJackTableHandler(BaseHandler):
         seat = seats[0]
         seat.player = request.user.get_profile()
         seat.save()
+        table.update_game()
         return response.send(status=201)
 
     @login_required
@@ -116,6 +117,10 @@ class BlackJackTableHandler(BaseHandler):
             return response.send()
         current_seat.player = None
         current_seat.save()
+        if table.current_turn == current_seat:
+            table.next_turn()
+        table.update_game()
+        
         return response.send()
 
 class BlackJackTableTypesHandler(BaseHandler):

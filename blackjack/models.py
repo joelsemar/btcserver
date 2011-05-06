@@ -34,15 +34,16 @@ class BlackJackTable(Table):
         ret['game_state'] = self.game_state
         dealer_cards = self.current_round.dealers_hand.get_cards()
         dealer_up_cards = []
+        
         if self.game_state == consts.GAME_STATE_PLAYING:
             dealer_up_cards.append(Card.get_face_down())
             for card in dealer_cards[1:]:
                 dealer_up_cards.append(card)
-        ret['dealer_up_cards'] = dealer_up_cards
-        all_hands = BlackJackHand.objects.filter(round=self.current_round, dealers_hand=False)
-        for hand in all_hands:
-            player = [s for s in ret['seats'] if s['player_id'] == hand.player_id][0]
-            player['cards'] = hand.get_cards()
+            ret['dealer_up_cards'] = dealer_up_cards
+            all_hands = BlackJackHand.objects.filter(round=self.current_round, dealers_hand=False)
+            for hand in all_hands:
+                player = [s for s in ret['seats'] if s['player_id'] == hand.player_id][0]
+                player['cards'] = hand.get_cards()
          
         return ret
     
@@ -65,12 +66,22 @@ class BlackJackTable(Table):
         client.notify()
         
     def initial_deal(self):
-        hands = BlackJackHand.objects.filter(round=self.current_round)
-        self.current_turn = [s for s in self.seats if s.player][0]
+        hand_qs = list(BlackJackHand.objects.filter(round=self.current_round))
+        hands = []
+        seats = list(self.seats)
+        for seat in seats:
+            if seats.index(seat) == 0:
+                self.current_turn = seat
+            hand = [h for h in hand_qs if h.player_id == seat.player_id and seat.player_id]
+            if hand:
+                hands.append(hand[0])
+        hands.append([h for h in hand_qs if h.dealers_hand][0])
+
 
         for _ in range(consts.NUM_CARDS_EACH_BLACKJACK):
             for hand in hands:
                 hand.add_card(self.pull_card())
+                time.sleep(.3)
         
         self.game_state = consts.GAME_STATE_PLAYING
         self.save()
