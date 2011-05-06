@@ -116,7 +116,7 @@ class BlackJackTable(Table):
     def deal_dealer_cards(self):
         dealer_hand = self.current_round.dealers_hand
         data = dealer_hand.get_cards() 
-        client = Client(data=data[0], table_id=self.id, action='flip_down_card')
+        client = Client(data=data[-1], table_id=self.id, action='flip_down_card')
         client.notify()
         while (dealer_hand.score < 17) and (not dealer_hand.busted):
             new_card = self.pull_card()
