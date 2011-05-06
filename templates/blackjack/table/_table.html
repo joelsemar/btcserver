@@ -34,26 +34,14 @@
 </div>
 </div>
 <table id="seats_table">
-    <tr>
+	<tr>
+	{% for seat in table.seats %}
+       {% if seat.player_id != player_id %}
         <td>
-            <div class='player_tab base_container player_tab_pos_1'>
-                Empty Seat
+            <div class='player_tab base_container' id="player_tab_pos_{{seat.position}}">
             </div>
         </td>
-        <td>
-            <div class='player_tab base_container player_tab_pos_2'>
-                Empty Seat
-            </div>
-        </td>
-        <td>
-            <div class='player_tab base_container player_tab_pos_3'>
-                Empty Seat
-            </div>
-        </td>
-        <td>
-            <div class='player_tab base_container player_tab_pos_4'>
-                Empty Seat
-            </div>
-        </td>
+       {% endif %}
+   {% endfor %}
     </tr>
 </table>

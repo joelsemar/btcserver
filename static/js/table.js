@@ -74,22 +74,22 @@ function Game(table_id){
     this.player_name = name;
     this.player_id = player_id;
     this.game_state = 'bidding';
-	
-	$.ajax({
-            url: '/btcserver/blackjack/table/{0}/game_data'.strFormat(table_id),
-            headers: {
-                'Accept': 'application/json'
-            },
-            type: 'GET',
-            success: function(response){
-                var game_data = response.data.game_data;
-				that.update_game(game_data);
-				that.init_dealer(game_data.dealer_up_cards)
-                
-            }
-        });
-	
-	
+    
+    $.ajax({
+        url: '/btcserver/blackjack/table/{0}/game_data'.strFormat(table_id),
+        headers: {
+            'Accept': 'application/json'
+        },
+        type: 'GET',
+        success: function(response){
+            var game_data = response.data.game_data;
+            that.update_game(game_data);
+            that.init_dealer(game_data.dealer_up_cards)
+            
+        }
+    });
+    
+    
     this.callback = function(new_data){
         if (new_data.action) {
             that[new_data.action](new_data.data)
@@ -103,7 +103,7 @@ function Game(table_id){
     this.update_game = function(game_data){
         ///this.update_dealer(game_data.dealer_up_cards);
         this.update_game_state(game_data.game_state)
-        
+        this.update_players(game_data.seats)
     }
     
     this.update_game_state = function(state){
@@ -112,20 +112,60 @@ function Game(table_id){
             $("#bid_form").show()
             $('#option_panel').hide()
         }
-		else if (state == 'playing'){
-			$("#bid_form").hide()
-            $('#option_panel').show()
-		}
+        else 
+            if (state == 'playing') {
+                $("#bid_form").hide()
+                $('#option_panel').show()
+            }
     }
     
-	this.init_dealer = function(cards){
+    this.init_dealer = function(cards){
         for (var i = 0; i < cards.length; i++) {
-			var card = cards[i];
-			card.dealt_to = 'dealer';
+            var card = cards[i];
+            card.dealt_to = 'dealer';
             this.deal_card(card)
         }
         
     }
+    
+    
+    this.update_players = function(player_data){
+        for (var i = 0; i < player_data.length; i++) {
+            var player = player_data[i];
+            var tab = $("#player_tab_pos_{0}".strFormat(player.position));
+            if (tab && player.player_id) {
+                tab.html(this.player_tab_html(player));
+				if (player.current_turn){
+					tab.addClass('current_turn');
+				}
+				else{
+					tab.removeClass('current_turn');
+				}
+            }
+            else {
+                tab.html('Empty Seat');
+            }
+        }
+        
+    }
+    this.player_tab_html = function(player){
+        html = "<span class='player_tab_name'>";
+        html += player.player_name;
+        html += "<div class='player_tab_cards'>";
+        debugger;
+		if (player.cards) {
+			for (var i = 0; i < player.cards.length; i++) {
+				var img_class = 'player_card';
+				
+				html += "<img class='player_card' src='{0} />".strFormat(player.cards[i].image_url);
+			}
+		}
+        html += "</div>";
+        html += "</span>";
+        return html
+        
+    }
+    
     
     this.deal_card = function(card_data){
         if (card_data) {
@@ -142,15 +182,15 @@ function Game(table_id){
     }
     
     this.get_card_html = function(card_data){
-		    var dom_id = card_data.id || "down_card";
-            return '<div class="card_slot card" id="{1}" ><img src="{0}" style="height:100%;" /></div>'.strFormat(card_data.image_url, dom_id);
+        var dom_id = card_data.id || "down_card";
+        return '<div class="card_slot card" id="{1}" ><img src="{0}" style="height:100%;" /></div>'.strFormat(card_data.image_url, dom_id);
         
     }
-	
-	this.flip_down_card = function(card_data){
-		$("#down_card").html('<img src="{0}" style="height:100%;" /></div>'.strFormat(card_data.image_url))
-	}
-	
+    
+    this.flip_down_card = function(card_data){
+        $("#down_card").html('<img src="{0}" style="height:100%;" /></div>'.strFormat(card_data.image_url))
+    }
+    
     
     this.blackjack = function(data){
         tool_bar_alert('BlackJack!');
@@ -218,7 +258,7 @@ function bet_button_handler(){
 
 function bet_callback(response){
     if (response.success) {
-       $("#bid_form").hide();
+        $("#bid_form").hide();
     }
     else {
         error = response.errors[0]

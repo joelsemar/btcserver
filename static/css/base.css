@@ -174,17 +174,6 @@ h2#table_title {
     text-align: center;
 }
 
-.player_tab {
-    width: 220px;
-    height: 125px;
-    margin: 0 auto;
-    font-size: 22px;
-    -moz-border-radius-bottomleft: 0;
-    -moz-border-radius-bottomright: 0;
-    -webkit-border-radius-bottomleft: 0px;
-    -webkit-border-radius-bottomright: 0px;
-}
-
 #bid_form {
 	position: fixed;
     top: 50%;
@@ -198,7 +187,7 @@ h2#table_title {
 
 #cards {
     height: 360px;
-    margin: 1% 3%;
+    margin: 2% 3%;
     width: auto;
 }
 
@@ -262,4 +251,48 @@ h2#table_title {
 	font-size: 25px;
 	width: 300px;
 	margin: 0 auto;
+}
+
+
+
+.player_tab {
+    width: 220px;
+    height: 125px;
+    margin: 0 auto;
+    padding: 5px;
+    font-size: 22px;
+    -moz-border-radius-bottomleft: 0;
+    -moz-border-radius-bottomright: 0;
+    -webkit-border-radius-bottomleft: 0px;
+    -webkit-border-radius-bottomright: 0px;
+}
+
+
+
+
+.player_tab_name{
+    width: 100%
+	font-weight: 12px;
+	text-align: center;
+}
+
+
+
+.player_card{
+	height: 100%;
+	width: 20px;
+	margin: 2px;
+}
+
+
+.player_tab_cards{
+	
+	width: 100%;
+	overflow-auto;
+	
+}
+
+.player_tab.current_turn{
+	background-color: #eee !important;
+	color: #333;
 }

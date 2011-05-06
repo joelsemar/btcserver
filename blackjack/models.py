@@ -1,5 +1,6 @@
 import consts
 import datetime
+import time
 from webservice_tools import utils
 from django.db import models
 from django.db.models import Q
@@ -38,9 +39,9 @@ class BlackJackTable(Table):
             for card in dealer_cards[1:]:
                 dealer_up_cards.append(card)
         ret['dealer_up_cards'] = dealer_up_cards
-        all_hands = BlackJackHand.objects.filter(round=self.current_round)
+        all_hands = BlackJackHand.objects.filter(round=self.current_round, dealers_hand=False)
         for hand in all_hands:
-            player = [p for p in ret['players'] if p['player_id'] == hand.player_id][0]
+            player = [s for s in ret['seats'] if s['player_id'] == hand.player_id][0]
             player['cards'] = hand.get_cards()
          
         return ret
@@ -89,7 +90,6 @@ class BlackJackTable(Table):
         needs_init = False
         if not self.id:
             needs_init = True
-            self.shuffle_cards()
         super(BlackJackTable, self).save(*args, **kwargs)
         if needs_init:
             self.start_new_round()
@@ -116,11 +116,13 @@ class BlackJackTable(Table):
     def deal_dealer_cards(self):
         dealer_hand = self.current_round.dealers_hand
         data = dealer_hand.get_cards() 
-        client = Client(data=data[-1], table_id=self.id, action='flip_down_card')
+        client = Client(data=data[0], table_id=self.id, action='flip_down_card')
         client.notify()
         while (dealer_hand.score < 17) and (not dealer_hand.busted):
+            time.sleep(.7)
             new_card = self.pull_card()
             dealer_hand.add_card(new_card)
+            
         self.game_state = consts.GAME_STATE_BIDDING
         self.save()
         self.update_game()
@@ -206,9 +208,9 @@ class BlackJackHand(BaseHand):
         return self.score > 21
     
     def add_card(self, card):
-        card_ids = self.get_card_ids()
-        card_ids.append(card['id'])
-        self.set_card_ids(card_ids)
+        cards = self.get_cards()
+        cards.append(card)
+        self.set_cards(cards)
         self.save()
         
         if self.dealers_hand:
@@ -219,10 +221,9 @@ class BlackJackHand(BaseHand):
                 
         if (self.dealers_hand and self.num_cards == 1):
             card.update(Card.get_face_down())
+            
         client = Client(data=card, table_id=self.round.table_id, action='deal_card')
         client.notify()
-            
-            
             
 
     def won(self):

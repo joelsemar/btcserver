@@ -1,4 +1,4 @@
-# Django settings for scserver project.
+ # Django settings for scserver project.
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG

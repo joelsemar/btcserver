@@ -23,6 +23,7 @@ class Table(models.Model):
         need_seats = False
         if not self.id:
             need_seats = True
+            self.shuffle_cards()
         super(Table, self).save(*args, **kwargs)
         if need_seats:
             for p in range(consts.NUM_SEATS):
@@ -30,24 +31,24 @@ class Table(models.Model):
                 
     def get_game_data(self):
         ret = self.dict()
-        players = []
+        ret['seats'] = []
         for seat in self.seats:
-            players.append({'seat_id': seat.id,
-                            'player_name': seat.player.name if seat.player else None,
-                            'player_id': seat.player.id if seat.player else None,
-                            'current_turn': self.current_turn_id == seat.id})
-        ret['players'] = players
+            ret['seats'].append({'seat_id': seat.id,
+                                 'position': seat.position,
+                                 'player_name': seat.player.name if seat.player else None,
+                                 'player_id': seat.player.id if seat.player else None,
+                                 'current_turn': self.current_turn_id == seat.id})
         return ret
     
     
     def shuffle_cards(self):
         deck = []
         for _ in range(self.num_decks):
-            deck.append(consts.CARD_IDS)
+            deck.append(consts.CARD_DATA)
         deck = utils.flatten(deck)
         random.shuffle(deck)
         self.deck = simplejson.dumps(deck)
-
+        
     
     def get_deck(self):
         return simplejson.loads(self.deck)
@@ -60,10 +61,13 @@ class Table(models.Model):
         cards = deck[-num_cards:]
         del deck[-num_cards:]
         self.deck = simplejson.dumps(deck)
-        return [c for c in consts.CARD_DATA if c['id'] in cards]
+        return cards
     
     def pull_card(self):
-        return self.pull_cards(1)[0]
+        try:
+            return self.pull_cards(1)[0]
+        except IndexError:
+            import pydevd;pydevd.settrace('127.0.0.1')
     
     @property
     def num_decks(self):
@@ -201,7 +205,7 @@ class Seat(models.Model):
         super(Seat, self).save(*args, **kwargs)
         
 class BaseHand(models.Model):
-    cards = models.CharField(max_length=128, default='[]')
+    cards = models.TextField(max_length=512, default='[]')
     bet = models.DecimalField(max_digits=12, decimal_places=8, null=True)
     player = models.ForeignKey(Player, null=True)
     resolved = models.BooleanField(default=False)
@@ -209,18 +213,16 @@ class BaseHand(models.Model):
     class Meta:
         abstract = True
     
-    def get_card_ids(self):
+    def get_cards(self):
         return simplejson.loads(self.cards)
     
-    def set_card_ids(self, card_ids):
-        self.cards = simplejson.dumps(card_ids)
+    def set_cards(self, cards):
+        self.cards = simplejson.dumps(cards)
         
-    def get_cards(self):
-        return [c for c in consts.CARD_DATA if c['id'] in self.get_card_ids()]
     
     @property
     def num_cards(self):
-        return len(self.get_card_ids())
+        return len(self.get_cards())
     
     def resolve(self):
         self.resolved = True
