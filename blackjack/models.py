@@ -216,9 +216,6 @@ class BlackJackHand(BaseHand):
         else:
             player_id = self.player_id
             card['dealt_to'] = player_id
-            if self.busted:
-                self.lost()
-                self.round.table.next_turn()
                 
         if (self.dealers_hand and self.num_cards == 1):
             card.update(Card.get_face_down())

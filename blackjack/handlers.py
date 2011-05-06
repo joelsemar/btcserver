@@ -195,7 +195,8 @@ class PlayerActionHandler(BaseHandler):
         current_hand.add_card(table.pull_card())
         table.save()
         if current_hand.busted:
-            response.addErrors('Busted')
+            current_hand.lost()
+            current_hand.round.table.next_turn()
             
         response.set(available_actions=available_actions)
         return response.send()

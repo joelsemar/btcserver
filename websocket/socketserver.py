@@ -148,7 +148,7 @@ def getClientConnectionService():
     global client_connection_manager
     xmlrpc.addIntrospection(client_connection_manager)
     site = server.Site(client_connection_manager)
-    return internet.TCPServer(9090, site)
+    return internet.TCPServer(9090, site, interface="127.0.0.1")
 
 # this is the core part of any tac file, the creation of the root-level
 # application object
