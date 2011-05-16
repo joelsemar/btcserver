@@ -190,6 +190,7 @@ class BlackJackRound(models.Model):
 class BlackJackHand(BaseHand):
     round = models.ForeignKey(BlackJackRound)
     dealers_hand = models.BooleanField(default=False)
+    doubled = models.BooleanField(default=False)
     
     def save(self, *args, **kwargs):
         check_hand_count = False

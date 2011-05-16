@@ -1,9 +1,10 @@
-body {
+body, html {
     background: #4c4b49 url('/static/images/green_bg.png') no-repeat top center;
     font-family: "Lucida Sans";
 	width:100%;
-	height:100%;
+	min-height:100%;
 	margin: 0;
+	height: 100%;
 }
 
 input {
@@ -168,7 +169,10 @@ h2#table_title {
     position: fixed;
     bottom: 0;
     width: 100%
+}html {
+    height: 100%;
 }
+
 
 #seats_table td {
     text-align: center;
@@ -186,39 +190,42 @@ h2#table_title {
 }
 
 #cards {
-    height: 360px;
-    margin: 2% 3%;
+    height: 45%;
+    margin: 2% 0 0 0;
     width: auto;
 }
 
 #dealer_cards {
-    height: 270px;
+    height: 30%;
     width: auto;
 }
 
 #dealer_cards .card_slot {
-    width: 185px;
 }
 
 .card_slot {
     display: block;
     float: left;
-    width: 240px;
 	margin: 0 0;
     height: 100%;
 	padding: 5px;
+	width: 12%;
 }
-
 #option_panel {
-    height: 310px;
-	margin: 15px 70px 0 10px;
-    padding: 10px;
-    width: 225px;
+    height: 71%;
+    margin: 5px 20px 0 5px;
+    padding: 15px 10px;
+    width: 15%;
 }
-
+#option_button_slot{
+	height: 100%;
+}
 .option_button {
     float: none;
-    margin-left: 10px;
+    margin: 10px 0 10px 10px;
+	line-height: 200%;
+	height: 15%;
+	width: 85%;
 }
 
 #bottom_toolbar{
@@ -256,7 +263,7 @@ h2#table_title {
 
 
 .player_tab {
-    width: 220px;
+    width: 90%;
     height: 125px;
     margin: 0 auto;
     padding: 5px;

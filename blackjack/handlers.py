@@ -1,9 +1,10 @@
 from webservice_tools.utils import BaseHandler
 from webservice_tools.decorators import login_required
-from backend.models import Player, Seat, Card
+from backend.models import Seat
 from blackjack.models import BlackJackHand, BlackJackTable, BlackJackTableType
 from backend.handlers import BaseCardsHandler
-from decimal import *
+from decimal import Decimal, InvalidOperation
+from django.db.models import F
 
 class BlackJackTablesHandler(BaseHandler):
     allowed_methods = ('GET',)
@@ -186,6 +187,7 @@ class PlayerActionHandler(BaseHandler):
             except BlackJackHand.DoesNotExist:
                 BlackJackHand.objects.create(player=player, round=round, bet=amount)
                 return response.send()
+            
         response.set(available_actions=['hit', 'stand', 'double'])
         return response.send(status=500)
     
@@ -196,6 +198,8 @@ class PlayerActionHandler(BaseHandler):
         except BlackJackHand.DoesNotExist:
             return response.send(status=404)
         
+        if current_hand.doubled:
+            return response.send(status=499)
         
         current_hand.add_card(table.pull_card())
         table.save()
@@ -206,12 +210,41 @@ class PlayerActionHandler(BaseHandler):
         response.set(available_actions=available_actions)
         return response.send()
     
+    
     def stand(self, request, response, player, table):
         table.next_turn()
         response.set(available_actions=[])
         return response.send()
     
+    
+    def double(self, request, response, player, table):
+        """
+        Double the user's current bet, no further action is allowed by this user
+        """
+        available_actions = []
+        try:
+            current_hand = BlackJackHand.objects.get(player=player, round=table.current_round, resolved=False)
+        except BlackJackHand.DoesNotExist:
+            return response.send(status=404)
+        
+        if current_hand.doubled:
+            return response.send(status=499)
+        
+        current_hand.bet = F('bet') *  2
+        current_hand.doubled = True
+        current_hand.save()
+        
+        current_hand.add_card(table.pull_card())
+        table.save()
+        if current_hand.busted:
+            current_hand.lost()
+        current_hand.round.table.next_turn()
             
+        response.set(available_actions=available_actions)
+        return response.send()
+     
+        
+           
 
 class BlackJackGameDataHandler(BaseHandler):
     allowed_methods = ('GET',)

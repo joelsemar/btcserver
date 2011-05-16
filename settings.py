@@ -68,7 +68,7 @@ TEMPLATE_LOADERS = (
 )
 
 MIDDLEWARE_CLASSES = (
-    'webservice_tools.middleware.exception.WebServiceException',
+ #   'webservice_tools.middleware.exception.WebServiceException',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',

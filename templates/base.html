@@ -1,4 +1,4 @@
-<!Doctype HTML>
+<!DOCTYPE html>
 <html>
     <head>
     	{% block head %}
@@ -18,7 +18,7 @@
 	  </script>
 	  {% endblock head %}
     </head>
-    <body>
+    <body style="height:100%">
         {% block content %}
 		{% endblock content %}
 		{% if request.user.is_authenticated %}
