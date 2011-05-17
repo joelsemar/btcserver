@@ -337,5 +337,6 @@ h2#table_title {
     background-color: black;
 	height: 100%;
 	width: 100%;
-	overflow: hidden;
+	overflow: scroll;
+	overflow-x: hidden;
 }

@@ -97,8 +97,10 @@ var ChatBox = {
 		ON_ESC_CALLBACK = noop;
     },
 	chat_received: function(data){
-		$("#chat_log_inner").append(this.get_chat_html(data))
-	},
+		var chat_log =$("#chat_log_inner") 
+		chat_log.append(this.get_chat_html(data))
+        chat_log.attr('scrollTop', chat_log.attr('scrollHeight'));
+   	},
 	get_chat_html: function(data){
 		var html = "<div class='chat_entry'>";
 		html += "<span class='chat_entry_label'>{0}:</span>";
