@@ -100,7 +100,7 @@ var ChatBox = {
 	chat_received: function(data){
 		var chat_log =$("#chat_log_inner") 
 		chat_log.append(this.get_chat_html(data))
-        chat_log.attr('scrollTop', chat_log.attr('scrollHeight'));
+        chat_log.attr('scrollTop', chat_log.attr('scrollHeight'), 3000);
    	},
 	get_chat_html: function(data){
 		var html = "<div class='chat_entry'>";
