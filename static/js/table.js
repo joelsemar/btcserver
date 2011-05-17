@@ -87,7 +87,8 @@ var ChatBox = {
             type: 'POST',
 			data: {'message': $('#chat_input').val()},
             success: function(response){
-				ChatBox.close()
+				ChatBox.close();
+				$('#chat_input').val('')
             }
         });
     },
