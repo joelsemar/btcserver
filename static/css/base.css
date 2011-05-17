@@ -1,12 +1,14 @@
 body, html {
-    background: #4c4b49 url('/static/images/green_bg.png') no-repeat top center;
+    
     font-family: "Lucida Sans";
 	width:100%;
 	min-height:100%;
 	margin: 0;
 	height: 100%;
 }
-
+body{
+	background: #4c4b49 url('/static/images/green_bg.png') no-repeat top center;
+}
 input {
     border: none;
 }
@@ -154,6 +156,15 @@ h2#table_title {
     -webkit-box-shadow: none;
 }
 
+#chat_form .buttonstyle{
+	margin-top: 0;
+}
+#chat_box{
+	height: 100%;
+	width: auto;
+}
+
+
 .fixed_inner {
     position: fixed;
     height: 100%;
@@ -188,9 +199,19 @@ h2#table_title {
     height: 100px;
     padding: 20px;
 }
+#chat_form{
+	position: fixed;
+    top: 50%;
+    left: 50%;
+    margin-top: -25px;
+    margin-left: -300px;
+    width: auto;
+    height: auto;
+    padding: 20px;
+}
 
 #cards {
-    height: 45%;
+    height: 39%;
     margin: 2% 0 0 0;
     width: auto;
 }
@@ -209,10 +230,10 @@ h2#table_title {
 	margin: 0 0;
     height: 100%;
 	padding: 5px;
-	width: 12%;
+	width: 2%;
 }
 #option_panel {
-    height: 71%;
+    height: auto;
     margin: 5px 20px 0 5px;
     padding: 15px 10px;
     width: 15%;
@@ -302,4 +323,19 @@ h2#table_title {
 .player_tab.current_turn{
 	background-color: #eee !important;
 	color: #333;
+}
+
+
+#chat_log{
+	float:right;
+	padding: 5px;
+	margin: 10px 10px 0 0;
+	width: 25%;
+	height: 25%;
+}
+#chat_log_inner{
+    background-color: black;
+	height: 100%;
+	width: 100%;
+	overflow: hidden;
 }

@@ -9,6 +9,8 @@ from backend.client_connection import ClientConnection as Client
 from backend import bitcoinrpc
 from webservice_tools.decorators import cached_property
 from decimal import *
+
+DEFAULT_BET_TIMEOUT = 60 #in seconds
 class BlackJackTableType(models.Model):
     name = models.CharField(max_length=128)
     low_bet = models.DecimalField(max_digits=12, decimal_places=8)
@@ -125,6 +127,11 @@ class BlackJackTable(Table):
         
     
     def deal_dealer_cards(self):
+        """
+        Hand is over, deal dealer cards,
+        Send the client data for the dealers down card, and call 'flip_down_card()' there
+        
+        """
         dealer_hand = self.current_round.dealers_hand
         data = dealer_hand.get_cards() 
         client = Client(data=data[0], table_id=self.id, action='flip_down_card')
@@ -140,6 +147,9 @@ class BlackJackTable(Table):
         self.resolve_bets()
         
     def resolve_bets(self):
+        """
+        We should be dealing with nonbusted, nonsurrendered hands only
+        """
         dealer = self.current_round.dealers_hand
         hands = BlackJackHand.objects.filter(round=self.current_round, resolved=False)
         for hand in hands:
@@ -193,15 +203,17 @@ class BlackJackHand(BaseHand):
     doubled = models.BooleanField(default=False)
     
     def save(self, *args, **kwargs):
-        check_hand_count = False
+        check_for_round_start = False
         if not self.id:
-            check_hand_count = True
+            check_for_round_start = True
         super(BlackJackHand, self).save(*args, **kwargs)
-        if check_hand_count:
-            round = self.round
+        if check_for_round_start:
+            now = datetime.datetime.utcnow()
+            round = self.round 
             table = round.table
             hand_count = BlackJackHand.objects.filter(round=self.round, dealers_hand=False).count()
-            if hand_count == table.num_players and table.num_players:
+            all_bets_in = (hand_count == table.num_players and table.num_players) 
+            if  all_bets_in or (now - round.started).seconds > DEFAULT_BET_TIMEOUT:
                 round.taking_bets = False
                 round.save()
                 table.initial_deal()

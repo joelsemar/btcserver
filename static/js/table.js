@@ -1,5 +1,18 @@
 app = {}
+var noop = function(){}
+var ON_ENTER_CALLBACK = noop;
+var ON_ESC_CALLBACK = noop;
 
+$(document).keydown(function(e){
+    if (e.keyCode == 13) {
+        ON_ENTER_CALLBACK()
+        return false;
+    }
+	if (e.keyCode == 27){
+		ON_ESC_CALLBACK();
+		return false;
+	}
+});
 
 // Let the library know where WebSocketMain.swf is:
 WEB_SOCKET_SWF_LOCATION = "/static/js/websocket_js/WebSocketMain.swf";
@@ -57,19 +70,55 @@ function init(table_id){
     
 }
 
+var ChatBox = {
+    open: function(){
+        $("#chat_form").show();
+        ON_ENTER_CALLBACK = ChatBox.send;
+		ON_ESC_CALLBACK = ChatBox.close;
+		$("#chat_input").focus()
+
+    },
+    send: function(){
+        $.ajax({
+            url: '/btcserver/table/{0}/chat'.strFormat(app.server.game.table_id),
+            headers: {
+                'Accept': 'application/json'
+            },
+            type: 'POST',
+			data: {'message': $('#chat_input').val()},
+            success: function(response){
+				ChatBox.close()
+            }
+        });
+    },
+    close: function(){
+        $("#chat_form").hide();
+        ON_ENTER_CALLBACK = ChatBox.open;
+		ON_ESC_CALLBACK = noop;
+    },
+	chat_received: function(data){
+		$("#chat_log_inner").append(this.get_chat_html(data))
+	},
+	get_chat_html: function(data){
+		var html = "<div class='chat_entry'>";
+		html += "<span class='chat_entry_label'>{0}:</span>";
+		html += "<span class='chat_entry_text'>{1}</span>";
+		return html.strFormat(data.from_name, data.message)
+	}
+}
 
 function Player(name, id){
     this.name = name;
     this.id = id;
-    this.hand = []
+    this.hand = [];
     this.seat_id = seat_id;
 }
 
 function Game(table_id){
     this.table_id = table_id;
-    this.players = []
-    this.dealers_hand = []
-    var that = this
+    this.players = [];
+    this.dealers_hand = [];
+    var that = this;
     this.current_balance = curr_bal;
     this.player_name = name;
     this.player_id = player_id;
@@ -85,7 +134,7 @@ function Game(table_id){
             var game_data = response.data.game_data;
             that.update_game(game_data);
             if (game_data.dealer_up_cards) {
-                that.init_dealer(game_data.dealer_up_cards)
+                that.init_dealer(game_data.dealer_up_cards);
             }
             
             
@@ -95,30 +144,32 @@ function Game(table_id){
     
     this.callback = function(new_data){
         if (new_data.action) {
-            that[new_data.action](new_data.data)
+            that[new_data.action](new_data.data);
         }
         else {
-            this.update(new_data)
+            this.update(new_data);
         }
-        console.log("Received: " + new_data)
+        console.log("Received: " + new_data);
     }
     
     this.update_game = function(game_data){
         ///this.update_dealer(game_data.dealer_up_cards);
-        this.update_game_state(game_data.game_state)
-        this.update_players(game_data.seats)
+        this.update_game_state(game_data.game_state);
+        this.update_players(game_data.seats);
     }
     
     this.update_game_state = function(state){
         that.game_state = state;
         if (state == 'bidding') {
-            $("#bid_form").show()
-            $('#option_panel').hide()
+            $("#bid_form").show();
+            $('#option_panel').hide();
+            ON_ENTER_CALLBACK = bet_button_handler;
         }
         else 
             if (state == 'playing') {
-                $("#bid_form").hide()
-                $('#option_panel').show()
+                $("#bid_form").hide();
+                $('#option_panel').show();
+                ON_ENTER_CALLBACK = ChatBox.open;
             }
     }
     
@@ -147,10 +198,10 @@ function Game(table_id){
             }
             else {
                 tab.html('Empty Seat');
-				tab.removeClass('current_turn');
+                tab.removeClass('current_turn');
             }
         }
-        if (!$('.current_turn').length && that.game_state == 'playing' && player_data.length >1) {
+        if (!$('.current_turn').length && that.game_state == 'playing' && player_data.length > 1) {
             $("#option_panel").effect("highlight", {}, 2500)
             
         }
@@ -249,13 +300,17 @@ function Game(table_id){
                 if (callback) {
                     callback(response);
                 }
-                if (response.errors.length){
-					tool_bar_alert(response.errors[0], true)
-				}
+                if (response.errors.length) {
+                    tool_bar_alert(response.errors[0], true)
+                }
             }
         })
         
     }
+	
+	this.chat = function(data){
+		ChatBox.chat_received(data);
+	}
     
 }
 

@@ -2,7 +2,8 @@ from webservice_tools.apps.user.handlers import GenericUserHandler
 from webservice_tools.utils import BaseHandler
 from webservice_tools.decorators import login_required
 from decimal import InvalidOperation
-from backend.models import Card, Player
+from backend.models import Card, Player, Seat
+from backend.client_connection import ClientConnection as Client
 
 
 class UserHandler(GenericUserHandler):
@@ -46,5 +47,33 @@ class BaseCardsHandler(BaseHandler):
             pass
         
         response.set(cards=cards)
+        return response.send()
+
+
+class ChatHandler(BaseHandler):
+    allowed_methods = ('POST',)
+    
+    @login_required
+    def create(self, request, table_id, response):
+        """
+        Send a chat message to your table
+        API Handler: POST /table/{id}/chat
+        PARAMS:
+            @message [string] Text of the message you want to send
+        """
+        player = request.user.get_profile()
+        message = request.POST.get('message')
+        if not message:
+            return response.send(errors="Provide a message to send")
+        
+        try:
+            Seat.objects.get(table__id=table_id, player=player)
+        except Seat.DoesNotExist:
+            return response.send(errors="You aren't sitting at that table", status=500)
+        
+        data = {'message': message, 'from_id': player.id, 'from_name': player.name}
+        client = Client(data=data, table_id=table_id, action='chat')
+        client.notify()
+        
         return response.send()
         

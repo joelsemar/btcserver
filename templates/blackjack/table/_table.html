@@ -1,50 +1,59 @@
 <script type="application/javascript">
-                 
-      		 $(document).ready(function(){
-                init({{table.id}});
-            });
+                     
+          		 $(document).ready(function(){
+                    init({{table.id}});
+                });
 </script>
 <div id="bid_form" class='base_container' style='display:none;'>
-    BTC: <input type='text' id='bid_input' />
+    BTC <input type='text' id='bid_input' />
     <div id="button_space">
         <div id ="submit_bid_button" class='buttonstyle' onclick="bet_button_handler()">
             Confirm
         </div>
     </div>
 </div>
-<div id="dealer_cards">
+<div id="chat_form" class='base_container' style='display:none;'>
+    <div id='chat_box'>
+         <input type='text' id='chat_input' size='65' onblur="ChatBox.close();"/>
+    </div>
 </div>
-
+<div id="chat_log" class='base_container'>
+	<div id='chat_log_inner'>
+		
+	</div>
+</div>
+ <div id="dealer_cards">
+</div>
 <div id ="cards">
-	<div id="option_panel" class='base_container card_slot' style='display:none;' >
-    <div id='option_button_slot'>
-        <div class='option_button buttonstyle' id="hit_option" onclick="app.server.game.send_action('hit')">
-            Hit
-        </div>
-        <div class='option_button buttonstyle' id="stand_option" onclick="app.server.game.send_action('stand')">
-            Stand
-        </div>
-        <div class='option_button buttonstyle' id="double_option" onclick="app.server.game.send_action('double')">
-            Double
-        </div>
-        <div class='option_button buttonstyle' id="split_option" >
-            Split
-        </div>
-		<div class='option_button buttonstyle' id="split_option" >
-            Surrender
+    <div id="option_panel" class='base_container card_slot' style='display:none;'>
+        <div id='option_button_slot'>
+            <div class='option_button buttonstyle' id="hit_option" onclick="app.server.game.send_action('hit')">
+                Hit
+            </div>
+            <div class='option_button buttonstyle' id="stand_option" onclick="app.server.game.send_action('stand')">
+                Stand
+            </div>
+            <div class='option_button buttonstyle' id="double_option" onclick="app.server.game.send_action('double')">
+                Double
+            </div>
+            <div class='option_button buttonstyle' id="split_option">
+                Split
+            </div>
+            <div class='option_button buttonstyle' id="split_option">
+                Surrender
+            </div>
         </div>
     </div>
 </div>
-</div>
 <table id="seats_table">
-	<tr>
-	{% for seat in table.seats %}
-       {% if seat.player_id != player_id %}
+    <tr>
+        {% for seat in table.seats %}
+        {% if seat.player_id != player_id %}
         <td>
             <div class='player_tab base_container' id="player_tab_pos_{{seat.position}}">
             </div>
         </td>
-       {% endif %}
-   {% endfor %}
+        {% endif %}
+        {% endfor %}
     </tr>
 </table>

@@ -176,7 +176,7 @@ class PlayerActionHandler(BaseHandler):
         try:
             if  Decimal(amount) > player.balance:
                 return response.send(errors="Insufficient funds", status=500)
-        except InvalidOperation:
+        except (InvalidOperation, TypeError):
             return response.send(errors="Invalid Amount", status=505)
         
         round = table.current_round
@@ -230,7 +230,7 @@ class PlayerActionHandler(BaseHandler):
         if current_hand.doubled:
             return response.send(status=499)
         
-        current_hand.bet = F('bet') *  2
+        current_hand.bet = current_hand.bet * Decimal(2)
         current_hand.doubled = True
         current_hand.save()
         
