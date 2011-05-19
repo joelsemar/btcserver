@@ -223,3 +223,15 @@ class BaseHand(models.Model):
     def resolve(self):
         self.resolved = True
         self.save()
+
+def gen_key():
+    L = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-'
+    return reduce(lambda a,b:a+b, [random.choice(L) for _ in range(32)])
+
+class Invitation(models.Model):
+    key = models.CharField(max_length=32, blank=True, default=gen_key)
+    player = models.ForeignKey(Player, null=True)
+    
+
+
+    

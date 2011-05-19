@@ -293,3 +293,5 @@ CARD_DATA = [{'id': 1,
   'value': u'king'}]
 
 CARD_IDS = [c['id'] for c in CARD_DATA]
+
+BLACK_JACK_DEFAULT_AVAILABLE_ACTIONS = '["hit", "stand", "double", "surrender"]'

@@ -11,6 +11,7 @@ admin.autodiscover()
 web_patterns = patterns('',
     (r'^blackjack/', include(blackjack_web_urls)), 
     (r'^admin/', include(admin.site.urls)),
+    (r'^(?P<key>[\w-]{32})/login/?$', 'backend.views.login'),
     (r'', direct_to_template, {'template': 'base.html'}),
 )
 ws_patterns = patterns('',

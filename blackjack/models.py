@@ -1,6 +1,7 @@
 import consts
 import datetime
 import time
+import simplejson
 from webservice_tools import utils
 from django.db import models
 from django.db.models import Q
@@ -46,6 +47,7 @@ class BlackJackTable(Table):
             for hand in all_hands:
                 player = [s for s in ret['seats'] if s['player_id'] == hand.player_id][0]
                 player['cards'] = hand.get_cards()
+                player['available_actions'] = hand.get_available_actions()
          
         return ret
     
@@ -72,11 +74,11 @@ class BlackJackTable(Table):
         hands = []
         seats = list(self.seats)
         for seat in seats:
-            if seats.index(seat) == 0:
-                self.current_turn = seat
             hand = [h for h in hand_qs if h.player_id == seat.player_id and seat.player_id]
             if hand:
                 hands.append(hand[0])
+                if seats.index(seat) == 0:
+                    self.current_turn = seat
         hands.append([h for h in hand_qs if h.dealers_hand][0])
 
 
@@ -118,8 +120,9 @@ class BlackJackTable(Table):
     def next_turn(self):
         current_seat = self.current_turn
         try:
-            self.current_turn = Seat.objects.filter(Q(position__gt=current_seat.position) & 
-                                                     Q(table=self) & ~Q(player=None))[0]
+            self.current_turn = Seat.objects.filter(Q(position__gt=current_seat.position), 
+                                                    Q(table=self), ~Q(player=None), 
+                                                    Q(player__blackjackhand__round__id=self.current_round.id))[0]
             self.save()
             self.update_game()
         except IndexError:
@@ -201,6 +204,8 @@ class BlackJackHand(BaseHand):
     round = models.ForeignKey(BlackJackRound)
     dealers_hand = models.BooleanField(default=False)
     doubled = models.BooleanField(default=False)
+    available_actions = models.CharField(max_length=256, default=consts.BLACK_JACK_DEFAULT_AVAILABLE_ACTIONS)
+    
     
     def save(self, *args, **kwargs):
         check_for_round_start = False
@@ -208,12 +213,11 @@ class BlackJackHand(BaseHand):
             check_for_round_start = True
         super(BlackJackHand, self).save(*args, **kwargs)
         if check_for_round_start:
-            now = datetime.datetime.utcnow()
             round = self.round 
             table = round.table
             hand_count = BlackJackHand.objects.filter(round=self.round, dealers_hand=False).count()
             all_bets_in = (hand_count == table.num_players and table.num_players) 
-            if  all_bets_in or (now - round.started).seconds > DEFAULT_BET_TIMEOUT:
+            if  all_bets_in:
                 round.taking_bets = False
                 round.save()
                 table.initial_deal()
@@ -280,3 +284,10 @@ class BlackJackHand(BaseHand):
     @property
     def has_blackjack(self):
         return (len(self.get_cards()) == 2) and (self.score == 21)
+
+    def get_available_actions(self):
+        return simplejson.loads(self.available_actions)
+    
+    def set_available_actions(self, available_actions):
+        self.available_actions = simplejson.dumps(available_actions)
+        self.save()

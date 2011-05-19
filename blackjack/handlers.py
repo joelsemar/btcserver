@@ -143,7 +143,7 @@ class CardsHandler(BaseCardsHandler):
         
 class PlayerActionHandler(BaseHandler):
     allowed_methods = ('POST',)
-    possible_actions = ('hit', 'stand', 'double', 'split', 'bet')
+    possible_actions = ('hit', 'stand', 'double', 'split', 'bet', 'surrender')
     
     def create(self, request, id, action, response):
         """
@@ -188,11 +188,10 @@ class PlayerActionHandler(BaseHandler):
                 BlackJackHand.objects.create(player=player, round=round, bet=amount)
                 return response.send()
             
-        response.set(available_actions=['hit', 'stand', 'double'])
         return response.send(status=500)
     
     def hit(self, request, response, player, table):
-        available_actions = []
+        available_actions = ['hit', 'stand']
         try:
             current_hand = BlackJackHand.objects.get(player=player, round=table.current_round, resolved=False)
         except BlackJackHand.DoesNotExist:
@@ -204,10 +203,13 @@ class PlayerActionHandler(BaseHandler):
         current_hand.add_card(table.pull_card())
         table.save()
         if current_hand.busted:
+            current_hand.available_actions = '[]'
             current_hand.lost()
             current_hand.round.table.next_turn()
-            
+        
+        current_hand.set_available_actions(available_actions)
         response.set(available_actions=available_actions)
+        
         return response.send()
     
     
@@ -221,7 +223,7 @@ class PlayerActionHandler(BaseHandler):
         """
         Double the user's current bet, no further action is allowed by this user
         """
-        available_actions = []
+        available_actions = ['hit','stand']
         try:
             current_hand = BlackJackHand.objects.get(player=player, round=table.current_round, resolved=False)
         except BlackJackHand.DoesNotExist:
@@ -239,12 +241,25 @@ class PlayerActionHandler(BaseHandler):
         if current_hand.busted:
             current_hand.lost()
         current_hand.round.table.next_turn()
-            
+        current_hand.set_available_actions(available_actions)
         response.set(available_actions=available_actions)
         return response.send()
      
+    def surrender(self, request, response, player, table):
+        available_actions = []
+        try:
+            current_hand = BlackJackHand.objects.get(player=player, round=table.current_round, resolved=False)
+        except BlackJackHand.DoesNotExist:
+            return response.send(status=404)
         
-           
+        current_hand.bet = current_hand.bet / Decimal(2)
+        current_hand.save()
+        current_hand.lost()
+        current_hand.round.table.next_turn()
+        
+        response.set(available_actions=available_actions)
+        return response.send()
+          
 
 class BlackJackGameDataHandler(BaseHandler):
     allowed_methods = ('GET',)

@@ -2,6 +2,7 @@
                      
           		 $(document).ready(function(){
                     init({{table.id}});
+				//	window.onunload = leave_table;
                 });
 </script>
 <div id="bid_form" class='base_container' style='display:none;'>
@@ -39,7 +40,7 @@
             <div class='option_button buttonstyle' id="split_option">
                 Split
             </div>
-            <div class='option_button buttonstyle' id="split_option">
+            <div class='option_button buttonstyle' id="surrender_option" onclick="app.server.game.send_action('surrender')">
                 Surrender
             </div>
         </div>

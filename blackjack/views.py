@@ -28,3 +28,5 @@ def table(request):
     return direct_to_template(request, 'blackjack/table/table.html',
                                extra_context=context)
                                    
+
+    

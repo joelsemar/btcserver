@@ -1,17 +1,18 @@
 app = {}
-var noop = function(){}
+var noop = function(){
+}
 var ON_ENTER_CALLBACK = noop;
 var ON_ESC_CALLBACK = noop;
-
+var ACTIONS = ['hit', 'stand', 'double', 'split', 'surrender']
 $(document).keydown(function(e){
     if (e.keyCode == 13) {
         ON_ENTER_CALLBACK()
         return false;
     }
-	if (e.keyCode == 27){
-		ON_ESC_CALLBACK();
-		return false;
-	}
+    if (e.keyCode == 27) {
+        ON_ESC_CALLBACK();
+        return false;
+    }
 });
 
 // Let the library know where WebSocketMain.swf is:
@@ -74,9 +75,9 @@ var ChatBox = {
     open: function(){
         $("#chat_form").show();
         ON_ENTER_CALLBACK = ChatBox.send;
-		ON_ESC_CALLBACK = ChatBox.close;
-		$("#chat_input").focus()
-
+        ON_ESC_CALLBACK = ChatBox.close;
+        $("#chat_input").focus()
+        
     },
     send: function(){
         $.ajax({
@@ -85,29 +86,31 @@ var ChatBox = {
                 'Accept': 'application/json'
             },
             type: 'POST',
-			data: {'message': $('#chat_input').val()},
+            data: {
+                'message': $('#chat_input').val()
+            },
             success: function(response){
-				ChatBox.close();
-				$('#chat_input').val('')
+                ChatBox.close();
+                $('#chat_input').val('')
             }
         });
     },
     close: function(){
         $("#chat_form").hide();
         ON_ENTER_CALLBACK = ChatBox.open;
-		ON_ESC_CALLBACK = noop;
+        ON_ESC_CALLBACK = noop;
     },
-	chat_received: function(data){
-		var chat_log =$("#chat_log_inner") 
-		chat_log.append(this.get_chat_html(data))
+    chat_received: function(data){
+        var chat_log = $("#chat_log_inner")
+        chat_log.append(this.get_chat_html(data))
         chat_log.attr('scrollTop', chat_log.attr('scrollHeight'), 3000);
-   	},
-	get_chat_html: function(data){
-		var html = "<div class='chat_entry'>";
-		html += "<span class='chat_entry_label'>{0}:</span>";
-		html += "<span class='chat_entry_text'>{1}</span>";
-		return html.strFormat(data.from_name, data.message)
-	}
+    },
+    get_chat_html: function(data){
+        var html = "<div class='chat_entry'>";
+        html += "<span class='chat_entry_label'>{0}:</span>";
+        html += "<span class='chat_entry_text'>{1}</span>";
+        return html.strFormat(data.from_name, data.message)
+    }
 }
 
 function Player(name, id){
@@ -159,6 +162,7 @@ function Game(table_id){
         ///this.update_dealer(game_data.dealer_up_cards);
         this.update_game_state(game_data.game_state);
         this.update_players(game_data.seats);
+        
     }
     
     this.update_game_state = function(state){
@@ -190,6 +194,10 @@ function Game(table_id){
         for (var i = 0; i < player_data.length; i++) {
             var player = player_data[i];
             var tab = $("#player_tab_pos_{0}".strFormat(player.position));
+            if (player.player_id == player_id && player.available_actions) {
+                app.server.game.update_available_actions(player.available_actions)
+                return;
+            }
             if (tab && player.player_id) {
                 tab.html(this.player_tab_html(player));
                 if (player.current_turn) {
@@ -292,6 +300,7 @@ function Game(table_id){
     }
     this.send_action = function(action, amount, callback){
         var data = {}
+        var callback = callback || noop;
         if (amount) {
             data.amount = amount;
         }
@@ -300,9 +309,11 @@ function Game(table_id){
             data: data,
             type: 'POST',
             success: function(response){
-                if (callback) {
-                    callback(response);
+                if (response && response.data.hasOwnProperty('available_actions')) {
+                    var available_actions = response.data.available_actions;
+                    app.server.game.update_available_actions(available_actions);
                 }
+                callback(response);
                 if (response.errors.length) {
                     tool_bar_alert(response.errors[0], true)
                 }
@@ -310,10 +321,24 @@ function Game(table_id){
         })
         
     }
-	
-	this.chat = function(data){
-		ChatBox.chat_received(data);
-	}
+    
+    this.chat = function(data){
+        ChatBox.chat_received(data);
+    }
+    
+    this.update_available_actions = function(available_actions){
+        for (var i = 0, l = ACTIONS.length; i < l; i++) {
+            var action = ACTIONS[i];
+            var button = $("#{0}_option".strFormat(action))
+            if (available_actions.includes(action)) {
+                button.show();
+            }
+            else {
+                button.hide();
+            }
+        }
+    }
+    
     
 }
 

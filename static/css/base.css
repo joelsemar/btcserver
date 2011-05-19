@@ -247,6 +247,7 @@ h2#table_title {
 	line-height: 200%;
 	height: 15%;
 	width: 85%;
+	display:none;
 }
 
 #bottom_toolbar{
