@@ -196,7 +196,6 @@ function Game(table_id){
             var tab = $("#player_tab_pos_{0}".strFormat(player.position));
             if (player.player_id == player_id && player.available_actions) {
                 app.server.game.update_available_actions(player.available_actions)
-                return;
             }
             if (tab && player.player_id) {
                 tab.html(this.player_tab_html(player));
@@ -221,6 +220,13 @@ function Game(table_id){
     this.player_tab_html = function(player){
         html = "<span class='player_tab_name'>";
         html += player.player_name;
+		html += "</span>"
+		if (player.player_id == player_id){
+			
+			html += "<div id='balance_label'>";
+			html += "<span id='acct_bal'>{0}</span> BTC".strFormat(curr_bal);
+			html += "<div>";
+		}
         html += "<div class='player_tab_cards'>";
         if (player.cards) {
             for (var i = 0; i < player.cards.length; i++) {
@@ -360,14 +366,13 @@ function bet_callback(response){
 }
 
 function tool_bar_alert(msg, error){
-    var options = {}
+    var options = {color: '#4444444'}
     if (error) {
         options.color = "#ff0000"
     }
-    var label = $("#balance_label");
+    var label = $("#message_bar");
     var old_html = label.html()
     label.html(msg)
-    $("#bottom_toolbar").effect("highlight", options, 2500)
     setTimeout(function(label, old_html){
         return function(){
             label.html(old_html);

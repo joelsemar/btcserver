@@ -1,9 +1,9 @@
 <script type="application/javascript">
-                     
-          		 $(document).ready(function(){
-                    init({{table.id}});
-				//	window.onunload = leave_table;
-                });
+                         
+              		 $(document).ready(function(){
+                        init({{table.id}});
+    				//	window.onunload = leave_table;
+                    });
 </script>
 <div id="bid_form" class='base_container' style='display:none;'>
     BTC <input type='text' id='bid_input' />
@@ -15,15 +15,17 @@
 </div>
 <div id="chat_form" class='base_container' style='display:none;'>
     <div id='chat_box'>
-         <input type='text' id='chat_input' size='65' onblur="ChatBox.close();"/>
+        <input type='text' id='chat_input' size='65' onblur="ChatBox.close();"/>
     </div>
 </div>
 <div id="chat_log" class='base_container'>
-	<div id='chat_log_inner'>
-		
-	</div>
+    <div id='chat_log_inner'>
+    </div>
 </div>
- <div id="dealer_cards">
+<div id='leave_table_button' class='buttonstyle' onclick="leave_table()" style="display:none;">
+    Leave Table
+</div>
+<div id="dealer_cards">
 </div>
 <div id ="cards">
     <div id="option_panel" class='base_container card_slot' style='display:none;'>
@@ -37,7 +39,7 @@
             <div class='option_button buttonstyle' id="double_option" onclick="app.server.game.send_action('double')">
                 Double
             </div>
-            <div class='option_button buttonstyle' id="split_option">
+            <div class='option_button buttonstyle' id="split_option" onclick="app.server.game.send_action('split')">
                 Split
             </div>
             <div class='option_button buttonstyle' id="surrender_option" onclick="app.server.game.send_action('surrender')">
@@ -46,15 +48,15 @@
         </div>
     </div>
 </div>
-<table id="seats_table">
-    <tr>
-        {% for seat in table.seats %}
-        {% if seat.player_id != player_id %}
-        <td>
-            <div class='player_tab base_container' id="player_tab_pos_{{seat.position}}">
-            </div>
-        </td>
-        {% endif %}
-        {% endfor %}
-    </tr>
-</table>
+<div id='seats_table_container'>
+    <table id="seats_table">
+        <tr>
+            {% for seat in table.seats %}
+            <td>
+                <div class='player_tab base_container' id="player_tab_pos_{{seat.position}}">
+                </div>
+            </td>
+            {% endfor %}
+        </tr>
+    </table>
+</div>

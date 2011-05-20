@@ -152,12 +152,25 @@ class Player(BaseProfile):
             bitcoinrpc.send(self.account_name, self.payout_address, amount)
     
     def update_balance(self, table_id, balance_change):
-        data = {'balance': str(self.balance), 'balance_change': balance_change}
+        data = {'balance': self.pretty_balance, 'balance_change': balance_change}
         client = Client(data=data, table_id=table_id,
                                 player_id=self.id, action='update_balance')
         client.notify()
+    
+    @property
+    def pretty_balance(self):
+        bal = str(self.balance)
+        temp = bal[::-1]
+        for i in range(len(temp)):
+            if temp[i] != '0':
+                ret =  bal[:-1*i]
+                break
+        
+        if ret.endswith('.'):
+            ret += '00'
             
-
+        return ret
+            
 class Card(models.Model):
     value = models.CharField(max_length=15, choices=consts.CARD_VALUE_CHOICES)
     suite = models.CharField(max_length=15, choices=consts.CARD_SUITE_CHOICES)

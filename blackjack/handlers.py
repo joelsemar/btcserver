@@ -219,6 +219,12 @@ class PlayerActionHandler(BaseHandler):
         return response.send()
     
     
+    def split(self, request, response, player, table):
+        table.next_turn()
+        response.set(available_actions=[])
+        return response.send()
+    
+    
     def double(self, request, response, player, table):
         """
         Double the user's current bet, no further action is allowed by this user

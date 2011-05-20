@@ -176,17 +176,26 @@ h2#table_title {
     float: left;
 }
 
+
+#seats_table_container{
+	position: fixed;
+    bottom: 22px;
+	width: 100%;
+	height: auto;
+	z-index:99;
+}
 #seats_table {
-    position: fixed;
-    bottom: 0;
-    width: 100%
-}html {
+    width: 97%;
+	margin:0 auto;
+}
+html {
     height: 100%;
 }
 
 
 #seats_table td {
     text-align: center;
+	width: 14%;
 }
 
 #bid_form {
@@ -250,15 +259,6 @@ h2#table_title {
 	display:none;
 }
 
-#bottom_toolbar{
-	height: 60px;
-	position: fixed;
-	bottom: 0;
-	width: 100%;
-	-moz-border-radius: 0px;
-	-webkit-border-radius: 0px;
-/*	background: url('/static/images/bottom_tool_bar.png') repeat-x; */
-}
 
 #info_bar{
 	float: right;
@@ -272,28 +272,28 @@ h2#table_title {
 	margin: 5px 25px;
 }
 #balance_label{
-	height: 50px;
 	padding: 5px;
 	color: #fafaf;
-	font-weight: bold;
-	line-height: 50px;
-	font-size: 25px;
 	width: 300px;
 	margin: 0 auto;
 }
 
-
+#acct_bal{
+	font-weight: bold;
+}
 
 .player_tab {
     width: 90%;
-    height: 125px;
+    height: 55px;
     margin: 0 auto;
     padding: 5px;
     font-size: 22px;
+	opacity: 0.9;
+	/**
     -moz-border-radius-bottomleft: 0;
     -moz-border-radius-bottomright: 0;
     -webkit-border-radius-bottomleft: 0px;
-    -webkit-border-radius-bottomright: 0px;
+    -webkit-border-radius-bottomright: 0px; */
 }
 
 
@@ -340,4 +340,50 @@ h2#table_title {
 	width: 100%;
 	overflow: auto;
 	overflow-x: hidden;
+}
+
+#toolbar_right{
+	height; auto;
+	width: 25px;
+	background: url("/static/images/toolbar_right.png") no-repeat;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 25px;
+	height: inherit;
+	
+}
+#toolbar_left{
+    height; auto;
+    float:left;
+    background: url("/static/images/toolbar_left.png") no-repeat;
+    height: inherit;
+    width: 25px;
+}
+#toolbar_inner{
+    height; auto;
+    background: url("/static/images/toolbar_bg.png") repeat-x;
+    width: 97%;
+height:inherit;
+	margin: 6px 0 0 25px;
+}
+#bottom_toolbar{
+    height: 43px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    -moz-border-radius: 0px;
+    -webkit-border-radius: 0px;
+    background-color: transparent;
+/*  background: url('/static/images/bottom_tool_bar.png') repeat-x; */
+}
+
+#message_bar{
+    height: 15px;
+    line-height: 15px;
+	margin-top: 15px;
+	font-weight:bold;
+    position: absolute;
+    text-align: center;
+    width: 100%;
 }

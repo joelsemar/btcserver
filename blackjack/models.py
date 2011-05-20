@@ -70,18 +70,9 @@ class BlackJackTable(Table):
         client.notify()
         
     def initial_deal(self):
-        hand_qs = list(BlackJackHand.objects.filter(round=self.current_round))
-        hands = []
+        hands = BlackJackHand.objects.filter(round=self.current_round).order_by('player__seat__position')
         seats = list(self.seats)
-        for seat in seats:
-            hand = [h for h in hand_qs if h.player_id == seat.player_id and seat.player_id]
-            if hand:
-                hands.append(hand[0])
-                if seats.index(seat) == 0:
-                    self.current_turn = seat
-        hands.append([h for h in hand_qs if h.dealers_hand][0])
-
-
+        self.current_turn = [s for s in seats if s.player_id == hands[0].player_id][0]
         for _ in range(consts.NUM_CARDS_EACH_BLACKJACK):
             for hand in hands:
                 hand.add_card(self.pull_card())
@@ -90,7 +81,6 @@ class BlackJackTable(Table):
         self.game_state = consts.GAME_STATE_PLAYING
         self.save()
         self.update_game()
-    
     
         
     @property
@@ -204,12 +194,17 @@ class BlackJackHand(BaseHand):
     round = models.ForeignKey(BlackJackRound)
     dealers_hand = models.BooleanField(default=False)
     doubled = models.BooleanField(default=False)
+    split = models.ForeignKey('self', related_name='split_from', null=True)
     available_actions = models.CharField(max_length=256, default=consts.BLACK_JACK_DEFAULT_AVAILABLE_ACTIONS)
     
     
     def save(self, *args, **kwargs):
+        """
+        When a new hand is created, we look to see if it is time to deal
+        """
         check_for_round_start = False
         if not self.id:
+            #TODO:should maybe use a post_create signal here, would be less ugly
             check_for_round_start = True
         super(BlackJackHand, self).save(*args, **kwargs)
         if check_for_round_start:
@@ -291,3 +286,4 @@ class BlackJackHand(BaseHand):
     def set_available_actions(self, available_actions):
         self.available_actions = simplejson.dumps(available_actions)
         self.save()
+

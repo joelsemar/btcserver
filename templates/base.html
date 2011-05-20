@@ -23,15 +23,19 @@
 		{% endblock content %}
 		{% if request.user.is_authenticated %}
 		<div id='bottom_toolbar' class="base_container">
+			<div id="toolbar_left" class='dockybar' ></div>
+			<div id='toolbar_inner' class='dockybar' >
+				<div id='message_bar'></div>
 			{% if table %}
-             <div id='leave_table_button' class='buttonstyle' onclick="leave_table()" >
-                Leave Table
-             </div>
-             {% endif %}
+             
+             
+			 {% else %}
 			 <div id="balance_label">
 			 	{{name}}: <span id="acct_bal">{{balance}}</span> BTC
 			  </div>
-			 
+			  {% endif %}
+			 </div>
+			 <div id='toolbar_right' class='dockybar'></div>
 			 
 		</div>
 		{% endif %}    	

@@ -11,6 +11,6 @@ def base(request):
     if request.user.is_authenticated():
         player= request.user.get_profile()
         context['name'] = player.name 
-        context['balance'] = player.balance
+        context['balance'] = player.pretty_balance
         context['player_id'] = player.id
     return context
