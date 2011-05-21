@@ -64,10 +64,7 @@ class Table(models.Model):
         return cards
     
     def pull_card(self):
-        try:
-            return self.pull_cards(1)[0]
-        except IndexError:
-            import pydevd;pydevd.settrace('127.0.0.1')
+        return self.pull_cards(1)[0]
     
     @property
     def num_decks(self):

@@ -22,7 +22,7 @@
     <div id='chat_log_inner'>
     </div>
 </div>
-<div id='leave_table_button' class='buttonstyle' onclick="leave_table()" style="display:none;">
+<div id='leave_table_button' class='buttonstyle base_container' onclick="leave_table()">
     Leave Table
 </div>
 <div id="dealer_cards">
@@ -39,7 +39,7 @@
             <div class='option_button buttonstyle' id="double_option" onclick="app.server.game.send_action('double')">
                 Double
             </div>
-            <div class='option_button buttonstyle' id="split_option" onclick="app.server.game.send_action('split')">
+            <div class='option_button buttonstyle' id="split_option" onclick="split();">
                 Split
             </div>
             <div class='option_button buttonstyle' id="surrender_option" onclick="app.server.game.send_action('surrender')">
@@ -47,6 +47,7 @@
             </div>
         </div>
     </div>
+	<div id="split_hand"></div>
 </div>
 <div id='seats_table_container'>
     <table id="seats_table">

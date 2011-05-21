@@ -387,3 +387,12 @@ height:inherit;
     text-align: center;
     width: 100%;
 }
+
+#split_hand{
+	height: 100%;
+	float: right;
+	margin-right: 25%;
+}
+#split_hand .card_slot{
+	margin-left: 6%;
+}

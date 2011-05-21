@@ -220,8 +220,30 @@ class PlayerActionHandler(BaseHandler):
     
     
     def split(self, request, response, player, table):
-        table.next_turn()
-        response.set(available_actions=[])
+        available_actions = ['hit', 'stand']
+        
+        try:
+            current_hand = BlackJackHand.objects.get(player=player, round=table.current_round, resolved=False)
+        except BlackJackHand.DoesNotExist:
+            return response.send(status=404)
+        
+        split_hand = BlackJackHand.objects.create(player=player, round=table.current_round, bet=current_hand.bet)
+        current_hand.split = split_hand
+        cards = current_hand.get_cards()
+        current_hand.set_cards([cards[0]])
+        
+        first_split_card = cards[1]
+        first_split_card['split_card'] = True
+        split_hand.add_card(first_split_card)
+        
+        current_hand.add_card(table.pull_card())
+        
+        second_split_card = table.pull_card()
+        second_split_card['split_card'] = True
+        split_hand.add_card(second_split_card)
+        
+        table.save()
+        response.set(available_actions=available_actions)
         return response.send()
     
     

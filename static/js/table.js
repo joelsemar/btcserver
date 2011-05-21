@@ -249,7 +249,13 @@ function Game(table_id){
             }
             else 
                 if (card_data.dealt_to == self.player_id) {
-                    $('#cards').append(this.get_card_html(card_data))
+					if (card_data.split_card){
+						$('#split_hand').append(this.get_card_html(card_data))
+					}
+					else{
+					   $('#cards').append(this.get_card_html(card_data));	
+					}
+                    
                 }
             
         }
@@ -419,5 +425,11 @@ function leave_table(){
             window.location = '/blackjack/tables';
         }
     });
+}
+
+function split(){
+	$("#cards .card_slot").last().remove()
+	app.server.game.send_action('split');
+	
 }
 
