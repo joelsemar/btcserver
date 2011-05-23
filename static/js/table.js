@@ -155,7 +155,6 @@ function Game(table_id){
         else {
             this.update(new_data);
         }
-        console.log("Received: " + new_data);
     }
     
     this.update_game = function(game_data){
@@ -356,7 +355,7 @@ function Game(table_id){
 
 function bet_button_handler(){
     $('#dealer_cards').html('')
-    $('#cards .card').remove()
+    $('#player_panel .card').remove()
     app.server.game.send_action('bet', $('#bid_input').val(), bet_callback)
 }
 

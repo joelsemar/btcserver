@@ -194,6 +194,7 @@ class BlackJackHand(BaseHand):
     round = models.ForeignKey(BlackJackRound)
     dealers_hand = models.BooleanField(default=False)
     doubled = models.BooleanField(default=False)
+    stood = models.BooleanField(default=False)
     split = models.ForeignKey('self', related_name='split_from', null=True)
     available_actions = models.CharField(max_length=256, default=consts.BLACK_JACK_DEFAULT_AVAILABLE_ACTIONS)
     
@@ -239,6 +240,8 @@ class BlackJackHand(BaseHand):
         if self.dealers_hand:
             card['dealt_to'] = 'dealer'
         else:
+            if self.split_from.all().count():
+                card['split_card'] = True
             player_id = self.player_id
             card['dealt_to'] = player_id
                 

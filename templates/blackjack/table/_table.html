@@ -27,8 +27,8 @@
 </div>
 <div id="dealer_cards">
 </div>
-<div id ="cards">
-    <div id="option_panel" class='base_container card_slot' style='display:none;'>
+<div id="player_panel">
+	<div id="option_panel" class='base_container card_slot' style='display:none;'>
         <div id='option_button_slot'>
             <div class='option_button buttonstyle' id="hit_option" onclick="app.server.game.send_action('hit')">
                 Hit
@@ -47,8 +47,12 @@
             </div>
         </div>
     </div>
+	<div id ="cards"></div>
 	<div id="split_hand"></div>
 </div>
+
+    
+	
 <div id='seats_table_container'>
     <table id="seats_table">
         <tr>

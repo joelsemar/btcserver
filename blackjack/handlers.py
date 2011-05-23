@@ -154,7 +154,7 @@ class PlayerActionHandler(BaseHandler):
         """
         player = request.user.get_profile()
         if action not in self.possible_actions:
-            return response.send(status=404)
+            return response.send(errors="Not Found", status=404)
         
         try:
             table = BlackJackTable.objects.get(id=id)
@@ -192,10 +192,9 @@ class PlayerActionHandler(BaseHandler):
     
     def hit(self, request, response, player, table):
         available_actions = ['hit', 'stand']
-        try:
-            current_hand = BlackJackHand.objects.get(player=player, round=table.current_round, resolved=False)
-        except BlackJackHand.DoesNotExist:
-            return response.send(status=404)
+        current_hand = get_players_current_hand(player, table)
+        if not current_hand:
+            return response.send(errors="Not Found", status=404)
         
         if current_hand.doubled:
             return response.send(status=499)
@@ -203,44 +202,52 @@ class PlayerActionHandler(BaseHandler):
         current_hand.add_card(table.pull_card())
         table.save()
         if current_hand.busted:
-            current_hand.available_actions = '[]'
+            
             current_hand.lost()
-            current_hand.round.table.next_turn()
+            if not get_players_current_hand(player, table):
+                available_actions = []
+                current_hand.round.table.next_turn()
         
-        current_hand.set_available_actions(available_actions)
         response.set(available_actions=available_actions)
         
         return response.send()
     
     
     def stand(self, request, response, player, table):
-        table.next_turn()
-        response.set(available_actions=[])
+      #  import pydevd;pydevd.settrace('127.0.0.1')
+        available_actions = ['hit', 'stand']
+        current_hand = get_players_current_hand(player, table)
+        if not current_hand:
+            return response.send(errors="Not Found", status=404)
+        
+        current_hand.stood = True
+        current_hand.save()
+        current_hand = get_players_current_hand(player, table)
+        if not current_hand:
+            available_actions=[]
+            table.next_turn()
+             
+        response.set(available_actions=available_actions)
         return response.send()
     
     
     def split(self, request, response, player, table):
         available_actions = ['hit', 'stand']
         
-        try:
-            current_hand = BlackJackHand.objects.get(player=player, round=table.current_round, resolved=False)
-        except BlackJackHand.DoesNotExist:
-            return response.send(status=404)
+        current_hand = get_players_current_hand(player, table)
+        if not current_hand:
+            return response.send(errors="Not Found", status=404)
         
         split_hand = BlackJackHand.objects.create(player=player, round=table.current_round, bet=current_hand.bet)
         current_hand.split = split_hand
+        current_hand.save()
         cards = current_hand.get_cards()
+       
         current_hand.set_cards([cards[0]])
-        
-        first_split_card = cards[1]
-        first_split_card['split_card'] = True
-        split_hand.add_card(first_split_card)
+        split_hand.add_card(cards[1])
         
         current_hand.add_card(table.pull_card())
-        
-        second_split_card = table.pull_card()
-        second_split_card['split_card'] = True
-        split_hand.add_card(second_split_card)
+        split_hand.add_card(table.pull_card())
         
         table.save()
         response.set(available_actions=available_actions)
@@ -252,10 +259,9 @@ class PlayerActionHandler(BaseHandler):
         Double the user's current bet, no further action is allowed by this user
         """
         available_actions = ['hit','stand']
-        try:
-            current_hand = BlackJackHand.objects.get(player=player, round=table.current_round, resolved=False)
-        except BlackJackHand.DoesNotExist:
-            return response.send(status=404)
+        current_hand = get_players_current_hand(player, table)
+        if not current_hand:
+            return response.send(errors="Not Found", status=404)
         
         if current_hand.doubled:
             return response.send(status=499)
@@ -275,10 +281,9 @@ class PlayerActionHandler(BaseHandler):
      
     def surrender(self, request, response, player, table):
         available_actions = []
-        try:
-            current_hand = BlackJackHand.objects.get(player=player, round=table.current_round, resolved=False)
-        except BlackJackHand.DoesNotExist:
-            return response.send(status=404)
+        current_hand = get_players_current_hand(player, table)
+        if not current_hand:
+            return response.send(errors="Not Found", status=404)
         
         current_hand.bet = current_hand.bet / Decimal(2)
         current_hand.save()
@@ -301,3 +306,14 @@ class BlackJackGameDataHandler(BaseHandler):
         
         response.set(game_data=table.get_game_data())
         return response.send()
+
+
+
+def get_players_current_hand(player, table):
+    
+    try:
+        return BlackJackHand.objects.filter(player=player, round=table.current_round, 
+                                            resolved=False, stood=False).order_by('when_created')[0]
+    except IndexError:
+        return None
+        

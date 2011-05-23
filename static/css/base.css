@@ -219,10 +219,18 @@ html {
     padding: 20px;
 }
 
+
+#player_panel{
+	height: 38%;
+	width: auto;
+	margin-top:10px;
+	padding: 10px;
+}
+
 #cards {
-    height: 39%;
-    margin: 2% 0 0 0;
+    height: 100%;
     width: auto;
+	display: inline-block
 }
 
 #dealer_cards {
@@ -239,13 +247,14 @@ html {
 	margin: 0 0;
     height: 100%;
 	padding: 5px;
-	width: 2%;
+	width: 25px;
 }
 #option_panel {
     height: auto;
     margin: 5px 20px 0 5px;
     padding: 15px 10px;
     width: 15%;
+	display: block;
 }
 #option_button_slot{
 	height: 100%;
@@ -364,7 +373,7 @@ html {
     height; auto;
     background: url("/static/images/toolbar_bg.png") repeat-x;
     width: 97%;
-height:inherit;
+    height:inherit;
 	margin: 6px 0 0 25px;
 }
 #bottom_toolbar{
@@ -390,9 +399,8 @@ height:inherit;
 
 #split_hand{
 	height: 100%;
-	float: right;
-	margin-right: 25%;
+	width; auto;
+	margin-left: 20%;
+	display: inline-block;
 }
-#split_hand .card_slot{
-	margin-left: 6%;
-}
+

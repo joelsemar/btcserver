@@ -1,4 +1,5 @@
 from decimal import Decimal
+import datetime
 import simplejson
 from webservice_tools import db_utils, utils
 import consts
@@ -215,7 +216,7 @@ class BaseHand(models.Model):
     bet = models.DecimalField(max_digits=12, decimal_places=8, null=True)
     player = models.ForeignKey(Player, null=True)
     resolved = models.BooleanField(default=False)
-    
+    when_created = models.DateTimeField(default=datetime.datetime.utcnow)
     class Meta:
         abstract = True
     
