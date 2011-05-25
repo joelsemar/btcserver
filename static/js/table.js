@@ -167,6 +167,7 @@ function Game(table_id){
     this.update_game_state = function(state){
         that.game_state = state;
         if (state == 'bidding') {
+			debugger;
             $("#bid_form").show();
             $('#option_panel').hide();
             ON_ENTER_CALLBACK = bet_button_handler;

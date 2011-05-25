@@ -78,9 +78,14 @@ class BlackJackTable(Table):
                 hand.add_card(self.pull_card())
                 time.sleep(.3)
         
-        self.game_state = consts.GAME_STATE_PLAYING
-        self.save()
-        self.update_game()
+        dealer_hand = self.current_round.dealers_hand
+        if dealer_hand.has_blackjack:
+            self.deal_dealer_cards()
+        else:
+            self.game_state = consts.GAME_STATE_PLAYING
+            self.save()
+            self.update_game()
+        
     
         
     @property
@@ -110,8 +115,8 @@ class BlackJackTable(Table):
     def next_turn(self):
         current_seat = self.current_turn
         try:
-            self.current_turn = Seat.objects.filter(Q(position__gt=current_seat.position), 
-                                                    Q(table=self), ~Q(player=None), 
+            self.current_turn = Seat.objects.filter(Q(position__gt=current_seat.position),
+                                                    Q(table=self), ~Q(player=None),
                                                     Q(player__blackjackhand__round__id=self.current_round.id))[0]
             self.save()
             self.update_game()
@@ -207,6 +212,25 @@ class BlackJackHand(BaseHand):
         if not self.id:
             #TODO:should maybe use a post_create signal here, would be less ugly
             check_for_round_start = True
+        elif (not self.resolved) and (not self.stood) and (not self.dealers_hand):
+            advance_turn = False
+            if self.busted:
+                self.lost()
+                advance_turn = True
+                
+            if self.score == 21:
+                self.stood = True
+                advance_turn = True
+            
+            if advance_turn:
+                table = self.round.table
+                if table.current_turn.player_id == self.player_id:
+                    try:
+                        BlackJackHand.objects.get(player=self.player, round=self.round, stood=False, resolved=False)
+                        table.next_turn()
+                    except BlackJackHand.DoesNotExist:
+                        pass
+                    
         super(BlackJackHand, self).save(*args, **kwargs)
         if check_for_round_start:
             round = self.round 
@@ -235,8 +259,8 @@ class BlackJackHand(BaseHand):
     def can_split(self):
         cards = self.get_cards()
         if (len(self.get_cards()) == 2) and not self.split_from.all().count():
-            if consts.BLACK_JACK_CARD_VALUE_MAPPING[cards[0]['value']]  \
-                == consts.BLACK_JACK_CARD_VALUE_MAPPING[cards[1]['value']]:
+            if consts.BLACK_JACK_CARD_VALUE_MAPPING.get(cards[0]['value'], 10)  \
+                == consts.BLACK_JACK_CARD_VALUE_MAPPING.get(cards[1]['value'], 10):
                 return True
         
         return False
@@ -247,9 +271,10 @@ class BlackJackHand(BaseHand):
         cards = self.get_cards()
         cards.append(card)
         self.set_cards(cards)
-        if self.can_split():
+        if self.can_split:
             actions = self.get_available_actions()
             actions.append('split')
+            self.set_available_actions(actions)
         self.save()
         
         if self.dealers_hand:

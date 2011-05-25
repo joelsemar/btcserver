@@ -209,23 +209,23 @@ class PlayerActionHandler(BaseHandler):
                 current_hand.round.table.next_turn()
         
         response.set(available_actions=available_actions)
-        
         return response.send()
     
     
-    def stand(self, request, response, player, table):
+    def stand(self, request, response, player, table, current_hand=None):
         available_actions = ['hit', 'stand']
-        current_hand = get_players_current_hand(player, table)
+        current_hand = current_hand or get_players_current_hand(player, table)
         if not current_hand:
             return response.send(errors="Not Found", status=404)
         
         current_hand.stood = True
         current_hand.save()
+        #try and see if they still have a hand left (split)
         current_hand = get_players_current_hand(player, table)
         if not current_hand:
             available_actions=[]
             table.next_turn()
-             
+        
         response.set(available_actions=available_actions)
         return response.send()
     
@@ -243,12 +243,12 @@ class PlayerActionHandler(BaseHandler):
         cards = current_hand.get_cards()
        
         current_hand.set_cards([cards[0]])
-        split_hand.add_card(cards[1])
-        
         current_hand.add_card(table.pull_card())
+        split_hand.add_card(cards[1])
         split_hand.add_card(table.pull_card())
         
         table.save()
+        
         response.set(available_actions=available_actions)
         return response.send()
     
