@@ -231,10 +231,25 @@ class BlackJackHand(BaseHand):
     def busted(self):
         return self.score > 21
     
+    @property
+    def can_split(self):
+        cards = self.get_cards()
+        if (len(self.get_cards()) == 2) and not self.split_from.all().count():
+            if consts.BLACK_JACK_CARD_VALUE_MAPPING[cards[0]['value']]  \
+                == consts.BLACK_JACK_CARD_VALUE_MAPPING[cards[1]['value']]:
+                return True
+        
+        return False
+            
+            
+    
     def add_card(self, card):
         cards = self.get_cards()
         cards.append(card)
         self.set_cards(cards)
+        if self.can_split():
+            actions = self.get_available_actions()
+            actions.append('split')
         self.save()
         
         if self.dealers_hand:

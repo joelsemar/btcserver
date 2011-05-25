@@ -10,3 +10,6 @@ register screen
 account screen (view payout address, pay in address, view balance (last few transactions?)
 options flyout for main game screen (leave table, account settings, log out, etc)
 display cards dealt to neighbors hand
+if all hands are busted, table should immediately resolve round
+
+
