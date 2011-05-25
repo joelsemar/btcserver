@@ -214,7 +214,6 @@ class PlayerActionHandler(BaseHandler):
     
     
     def stand(self, request, response, player, table):
-      #  import pydevd;pydevd.settrace('127.0.0.1')
         available_actions = ['hit', 'stand']
         current_hand = get_players_current_hand(player, table)
         if not current_hand:

@@ -1,0 +1,12 @@
+Notify client when split is available.
+
+Dealer Blackjack should result in immediate hand resolution.
+Immediate stand on 21
+Implement Insurance
+Remove deal 'animation' from server side...yuk
+Implement timeout on all actions (30 seconds, results in player skip)
+Login screen
+register screen
+account screen (view payout address, pay in address, view balance (last few transactions?)
+options flyout for main game screen (leave table, account settings, log out, etc)
+display cards dealt to neighbors hand
