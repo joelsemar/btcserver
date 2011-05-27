@@ -5,6 +5,7 @@ var ON_ENTER_CALLBACK = noop;
 var ON_ESC_CALLBACK = noop;
 var ACTIONS = ['hit', 'stand', 'double', 'split', 'surrender']
 var CARD_ANIMATION_DELAY = 400; //in ms
+var DEAL_ANIMATION_INTERVAL = null;
 $(document).keydown(function(e){
     if (e.keyCode == 13) {
         ON_ENTER_CALLBACK()
@@ -131,7 +132,7 @@ function Game(table_id){
     this.player_id = player_id;
     this.game_state = 'bidding';
     this.last_card_dealt = undefined;
-	
+    this.pending_cards = [];
     $.ajax({
         url: '/btcserver/blackjack/table/{0}/game_data'.strFormat(table_id),
         headers: {
@@ -151,7 +152,7 @@ function Game(table_id){
     
     
     this.callback = function(new_data){
-		self[new_data.action](new_data.data);
+        self[new_data.action](new_data.data);
     }
     
     this.update_game = function(game_data){
@@ -180,7 +181,7 @@ function Game(table_id){
         for (var i = 0; i < cards.length; i++) {
             var card = cards[i];
             card.dealt_to = 'dealer';
-            this.deal_card(card)
+            this.deal_card(card, true)
         }
         
     }
@@ -210,8 +211,8 @@ function Game(table_id){
         if (!$('.current_turn').length && self.game_state == 'playing' && player_data.length > 1) {
             $("#option_panel").effect("highlight", {}, 2500)
             
-			
-			
+            
+            
         }
         
     }
@@ -239,47 +240,52 @@ function Game(table_id){
         
     }
     
-    
-    this.deal_card = function(card_data){
-        if (self.last_card_dealt) {
-			//Applies the card animation delay to a dealt card
-            var now = new Date().getTime();
-            var time_since = now - self.last_card_dealt;
-             if (time_since < CARD_ANIMATION_DELAY) {
-                var wait_time = CARD_ANIMATION_DELAY - time_since;
-				setTimeout(function(card_data){
-					return function(){
-						self.deal_card(card_data)
-					}
-				}(card_data), wait_time);
-				return;
-            }
-        }
-        
-        
-        if (card_data) {
-            if (card_data.dealt_to == 'dealer') {
-				if (card_data.name == null){
-					$('#dealer_cards').prepend(this.get_card_html(card_data))
+    this.deal_card_animate = function(card_data){
+	
+		self.pending_cards.push(card_data);
+		if (!DEAL_ANIMATION_INTERVAL) {
+			DEAL_ANIMATION_INTERVAL = setInterval(function(){
+				card = self.pending_cards.shift();
+				if (card) {
+					self.deal_card(card, true)
 				}
-				else{
-				    $('#dealer_cards').append(this.get_card_html(card_data))	
+				else {
+					clearInterval(DEAL_ANIMATION_INTERVAL);
+					DEAL_ANIMATION_INTERVAL = null;
 				}
-                
 				
+			}, CARD_ANIMATION_DELAY);
+		}
+	}        
+    
+    this.deal_card = function(card_data, skip_animation){
+		
+		if(!skip_animation){
+			return this.deal_card_animate(card_data)
+		}
+    
+        if (card_data.dealt_to == 'dealer') {
+            if (card_data.name == null) {
+                $('#dealer_cards').prepend(this.get_card_html(card_data))
             }
-            else 
-                if (card_data.dealt_to == self.player_id) {
-                    if (card_data.split_card) {
-                        $('#split_hand').append(this.get_card_html(card_data))
-                    }
-                    else {
-                        $('#cards').append(this.get_card_html(card_data));
-                    }
-                    
-                }
+            else {
+                $('#dealer_cards').append(this.get_card_html(card_data))
+            }
+            
             
         }
+        else 
+            if (card_data.dealt_to == self.player_id) {
+                if (card_data.split_card) {
+                    $('#split_hand').append(this.get_card_html(card_data))
+                }
+                else {
+                    $('#cards').append(this.get_card_html(card_data));
+                }
+                
+            }
+        
+        console.log('Successfully dealt: ' + card_data.name)
         self.last_card_dealt = new Date().getTime();
     }
     
@@ -290,6 +296,7 @@ function Game(table_id){
     }
     
     this.flip_down_card = function(card_data){
+		debugger;
         $("#down_card").html('<img src="{0}" style="height:100%;" /></div>'.strFormat(card_data.image_url))
     }
     
@@ -325,7 +332,7 @@ function Game(table_id){
                     for (var i = 0; i < cards.length; i++) {
                         card = cards[i];
                         card.dealt_to = app.server.game.player_id
-                        self.deal_card(card);
+                        self.deal_card(card, true);
                     }
                 }
             }

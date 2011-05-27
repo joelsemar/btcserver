@@ -45,7 +45,7 @@ class Table(models.Model):
     def shuffle_cards(self):
         deck = []
         for _ in range(self.num_decks):
-            deck.append(consts.CARD_DATA)
+            deck.append(consts.BLACKJACK_CARDS)
         deck = utils.flatten(deck)
         random.shuffle(deck)
         self.deck = simplejson.dumps(deck)
