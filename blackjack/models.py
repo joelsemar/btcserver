@@ -76,8 +76,7 @@ class BlackJackTable(Table):
         for _ in range(consts.NUM_CARDS_EACH_BLACKJACK):
             for hand in hands:
                 hand.add_card(self.pull_card())
-                time.sleep(.3)
-        
+
         dealer_hand = self.current_round.dealers_hand
         if dealer_hand.has_blackjack:
             self.deal_dealer_cards()
@@ -134,10 +133,13 @@ class BlackJackTable(Table):
         data = dealer_hand.get_cards() 
         client = Client(data=data[0], table_id=self.id, action='flip_down_card')
         client.notify()
-        while (dealer_hand.score < 17) and (not dealer_hand.busted):
-            time.sleep(.7)
-            new_card = self.pull_card()
-            dealer_hand.add_card(new_card)
+        #only deal if it is
+         
+        if BlackJackHand.objects.filter(round=self.current_round, resolved=False):
+            while (dealer_hand.score < 17) and (not dealer_hand.busted):
+                time.sleep(.7)
+                new_card = self.pull_card()
+                dealer_hand.add_card(new_card)
             
         self.game_state = consts.GAME_STATE_BIDDING
         self.save()
@@ -212,24 +214,6 @@ class BlackJackHand(BaseHand):
         if not self.id:
             #TODO:should maybe use a post_create signal here, would be less ugly
             check_for_round_start = True
-        elif (not self.resolved) and (not self.stood) and (not self.dealers_hand):
-            advance_turn = False
-            if self.busted:
-                self.lost()
-                advance_turn = True
-                
-            if self.score == 21:
-                self.stood = True
-                advance_turn = True
-            
-            if advance_turn:
-                table = self.round.table
-                if table.current_turn.player_id == self.player_id:
-                    try:
-                        BlackJackHand.objects.get(player=self.player, round=self.round, stood=False, resolved=False)
-                        table.next_turn()
-                    except BlackJackHand.DoesNotExist:
-                        pass
                     
         super(BlackJackHand, self).save(*args, **kwargs)
         if check_for_round_start:
@@ -277,6 +261,7 @@ class BlackJackHand(BaseHand):
             self.set_available_actions(actions)
         self.save()
         
+        #augment the card data for client
         if self.dealers_hand:
             card['dealt_to'] = 'dealer'
         else:

@@ -1,10 +1,9 @@
 Notify client when split is available. DONE
 Dealer Blackjack should result in immediate hand resolution.DONE
-Immediate stand on 21 DONE
+Remove deal 'animation' from server side...yuk, DONE
 
 
 Implement Insurance
-Remove deal 'animation' from server side...yuk
 Implement timeout on all actions (30 seconds, results in player skip)
 Login screen
 register screen

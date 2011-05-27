@@ -292,6 +292,8 @@ CARD_DATA = [{'id': 1,
   'suite': u'diamonds',
   'value': u'king'}]
 
+BLACKJACK_CARDS = [c for c in CARD_DATA if BLACK_JACK_CARD_VALUE_MAPPING.get(c['value'], 10) > 9]
+
 CARD_IDS = [c['id'] for c in CARD_DATA]
 
 BLACK_JACK_DEFAULT_AVAILABLE_ACTIONS = '["hit", "stand", "double", "surrender"]'

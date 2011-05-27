@@ -202,30 +202,31 @@ class PlayerActionHandler(BaseHandler):
         current_hand.add_card(table.pull_card())
         table.save()
         if current_hand.busted:
-            
+            current_hand.available_actions = '[]'
             current_hand.lost()
-            if not get_players_current_hand(player, table):
-                available_actions = []
-                current_hand.round.table.next_turn()
+            current_hand = get_players_current_hand(player, table)
+            if not current_hand:
+                table.next_turn()
         
+        current_hand.set_available_actions(available_actions)
         response.set(available_actions=available_actions)
+        
         return response.send()
     
     
-    def stand(self, request, response, player, table, current_hand=None):
+    def stand(self, request, response, player, table):
         available_actions = ['hit', 'stand']
-        current_hand = current_hand or get_players_current_hand(player, table)
+        current_hand = get_players_current_hand(player, table)
         if not current_hand:
             return response.send(errors="Not Found", status=404)
         
         current_hand.stood = True
         current_hand.save()
-        #try and see if they still have a hand left (split)
         current_hand = get_players_current_hand(player, table)
         if not current_hand:
             available_actions=[]
             table.next_turn()
-        
+             
         response.set(available_actions=available_actions)
         return response.send()
     
@@ -243,12 +244,12 @@ class PlayerActionHandler(BaseHandler):
         cards = current_hand.get_cards()
        
         current_hand.set_cards([cards[0]])
-        current_hand.add_card(table.pull_card())
         split_hand.add_card(cards[1])
+        
+        current_hand.add_card(table.pull_card())
         split_hand.add_card(table.pull_card())
         
         table.save()
-        
         response.set(available_actions=available_actions)
         return response.send()
     
@@ -312,7 +313,7 @@ def get_players_current_hand(player, table):
     
     try:
         return BlackJackHand.objects.filter(player=player, round=table.current_round, 
-                                            resolved=False, stood=False).order_by('when_created')[0]
+                                            resolved=False, stood=False).order_by('-when_created')[0]
     except IndexError:
         return None
         

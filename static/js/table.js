@@ -4,6 +4,7 @@ var noop = function(){
 var ON_ENTER_CALLBACK = noop;
 var ON_ESC_CALLBACK = noop;
 var ACTIONS = ['hit', 'stand', 'double', 'split', 'surrender']
+var CARD_ANIMATION_DELAY = 400; //in ms
 $(document).keydown(function(e){
     if (e.keyCode == 13) {
         ON_ENTER_CALLBACK()
@@ -18,7 +19,7 @@ $(document).keydown(function(e){
 // Let the library know where WebSocketMain.swf is:
 WEB_SOCKET_SWF_LOCATION = "/static/js/websocket_js/WebSocketMain.swf";
 function Server(table_id){
-    var that = this;
+    var self = this;
     this.game = new Game(table_id)
     this.connect = function(){
     
@@ -46,13 +47,13 @@ function Server(table_id){
                 console.log("registration success");
             }
             else {
-                that.game.callback(data);
+                self.game.callback(data);
             }
         };
         ws.onclose = function(){
             console.log("closed");
         };
-        that.socket = ws;
+        self.socket = ws;
     };
     
     this.send = function(data){
@@ -124,12 +125,13 @@ function Game(table_id){
     this.table_id = table_id;
     this.players = [];
     this.dealers_hand = [];
-    var that = this;
+    var self = this;
     this.current_balance = curr_bal;
     this.player_name = name;
     this.player_id = player_id;
     this.game_state = 'bidding';
-    
+    this.last_card_dealt = undefined;
+	
     $.ajax({
         url: '/btcserver/blackjack/table/{0}/game_data'.strFormat(table_id),
         headers: {
@@ -138,9 +140,9 @@ function Game(table_id){
         type: 'GET',
         success: function(response){
             var game_data = response.data.game_data;
-            that.update_game(game_data);
+            self.update_game(game_data);
             if (game_data.dealer_up_cards) {
-                that.init_dealer(game_data.dealer_up_cards);
+                self.init_dealer(game_data.dealer_up_cards);
             }
             
             
@@ -149,12 +151,7 @@ function Game(table_id){
     
     
     this.callback = function(new_data){
-        if (new_data.action) {
-            that[new_data.action](new_data.data);
-        }
-        else {
-            this.update(new_data);
-        }
+		self[new_data.action](new_data.data);
     }
     
     this.update_game = function(game_data){
@@ -165,9 +162,8 @@ function Game(table_id){
     }
     
     this.update_game_state = function(state){
-        that.game_state = state;
+        self.game_state = state;
         if (state == 'bidding') {
-			debugger;
             $("#bid_form").show();
             $('#option_panel').hide();
             ON_ENTER_CALLBACK = bet_button_handler;
@@ -211,22 +207,24 @@ function Game(table_id){
                 tab.removeClass('current_turn');
             }
         }
-        if (!$('.current_turn').length && that.game_state == 'playing' && player_data.length > 1) {
+        if (!$('.current_turn').length && self.game_state == 'playing' && player_data.length > 1) {
             $("#option_panel").effect("highlight", {}, 2500)
             
+			
+			
         }
         
     }
     this.player_tab_html = function(player){
         html = "<span class='player_tab_name'>";
         html += player.player_name;
-		html += "</span>"
-		if (player.player_id == player_id){
-			
-			html += "<div id='balance_label'>";
-			html += "<span id='acct_bal'>{0}</span> BTC".strFormat(curr_bal);
-			html += "<div>";
-		}
+        html += "</span>"
+        if (player.player_id == player_id) {
+        
+            html += "<div id='balance_label'>";
+            html += "<span id='acct_bal'>{0}</span> BTC".strFormat(curr_bal);
+            html += "<div>";
+        }
         html += "<div class='player_tab_cards'>";
         if (player.cards) {
             for (var i = 0; i < player.cards.length; i++) {
@@ -243,23 +241,46 @@ function Game(table_id){
     
     
     this.deal_card = function(card_data){
+        if (self.last_card_dealt) {
+			//Applies the card animation delay to a dealt card
+            var now = new Date().getTime();
+            var time_since = now - self.last_card_dealt;
+             if (time_since < CARD_ANIMATION_DELAY) {
+                var wait_time = CARD_ANIMATION_DELAY - time_since;
+				setTimeout(function(card_data){
+					return function(){
+						self.deal_card(card_data)
+					}
+				}(card_data), wait_time);
+				return;
+            }
+        }
+        
+        
         if (card_data) {
             if (card_data.dealt_to == 'dealer') {
-                $('#dealer_cards').append(this.get_card_html(card_data))
+				if (card_data.name == null){
+					$('#dealer_cards').prepend(this.get_card_html(card_data))
+				}
+				else{
+				    $('#dealer_cards').append(this.get_card_html(card_data))	
+				}
+                
+				
             }
             else 
                 if (card_data.dealt_to == self.player_id) {
-					if (card_data.split_card){
-						$('#split_hand').append(this.get_card_html(card_data))
-					}
-					else{
-					   $('#cards').append(this.get_card_html(card_data));	
-					}
+                    if (card_data.split_card) {
+                        $('#split_hand').append(this.get_card_html(card_data))
+                    }
+                    else {
+                        $('#cards').append(this.get_card_html(card_data));
+                    }
                     
                 }
             
         }
-        
+        self.last_card_dealt = new Date().getTime();
     }
     
     this.get_card_html = function(card_data){
@@ -304,7 +325,7 @@ function Game(table_id){
                     for (var i = 0; i < cards.length; i++) {
                         card = cards[i];
                         card.dealt_to = app.server.game.player_id
-                        that.deal_card(card);
+                        self.deal_card(card);
                     }
                 }
             }
@@ -317,7 +338,7 @@ function Game(table_id){
             data.amount = amount;
         }
         $.ajax({
-            url: '/btcserver/blackjack/table/{0}/{1}'.strFormat(that.table_id, action),
+            url: '/btcserver/blackjack/table/{0}/{1}'.strFormat(self.table_id, action),
             data: data,
             type: 'POST',
             success: function(response){
@@ -361,7 +382,7 @@ function bet_button_handler(){
 }
 
 function bet_callback(response){
-    if (response.success) {
+    if (response.success && app.server.game.game_state == 'playing') {
         $("#bid_form").hide();
     }
     else {
@@ -372,7 +393,9 @@ function bet_callback(response){
 }
 
 function tool_bar_alert(msg, error){
-    var options = {color: '#4444444'}
+    var options = {
+        color: '#4444444'
+    }
     if (error) {
         options.color = "#ff0000"
     }
@@ -428,8 +451,8 @@ function leave_table(){
 }
 
 function split(){
-	$("#cards .card_slot").last().remove()
-	app.server.game.send_action('split');
-	
+    $("#cards .card_slot").last().remove()
+    app.server.game.send_action('split');
+    
 }
 
