@@ -35,7 +35,7 @@ class BlackJackTable(Table):
     def get_game_data(self):
         ret = super(BlackJackTable, self).get_game_data()
         ret['game_state'] = self.game_state
-        dealer_cards = self.current_round.dealers_hand.get_cards()
+        dealer_cards = self.current_round and self.current_round.dealers_hand.get_cards() or []
         dealer_up_cards = []
         
         if self.game_state == consts.GAME_STATE_PLAYING:
@@ -135,7 +135,7 @@ class BlackJackTable(Table):
         client.notify()
         #only deal if it is
          
-        if BlackJackHand.objects.filter(round=self.current_round, resolved=False):
+        if BlackJackHand.objects.filter(round=self.current_round, resolved=False, dealers_hand=False):
             while (dealer_hand.score < 17) and (not dealer_hand.busted):
                 time.sleep(.7)
                 new_card = self.pull_card()

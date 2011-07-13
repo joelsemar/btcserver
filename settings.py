@@ -74,9 +74,8 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'webservice_tools.middleware.response.ProvideResponse',
-    'webservice_tools.logging.middleware.LoggingMiddleware',
     'django.middleware.transaction.TransactionMiddleware',
- 
+    'webservice_tools.middleware.logger.LoggingMiddleware'
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (

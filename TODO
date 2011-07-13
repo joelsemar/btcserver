@@ -1,17 +1,23 @@
 Notify client when split is available. DONE
 Dealer Blackjack should result in immediate hand resolution.DONE
 Remove deal 'animation' from server side...yuk, DONE
-
+if all hands are busted, table should immediately resolve round DONE
 
 Implement Insurance
 Implement timeout on all actions (30 seconds, results in player skip)
 Login screen
 register screen
+show current score of hands
+indicate which hand  you are playing during split
+
 account screen (view payout address, pay in address, view balance (last few transactions?)
 options flyout for main game screen (leave table, account settings, log out, etc)
 display cards dealt to neighbors hand
-if all hands are busted, table should immediately resolve round
+System messages on Chat ("<foo> busts and loses 0.01 btc", "<bar> blackjacks and wins 0.2 btc!")
 
+Allow user to show currency in different powers of 10 
+double after split
+resplit?
 
 
 

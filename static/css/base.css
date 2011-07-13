@@ -174,16 +174,17 @@ h2#table_title {
 
 #cancel_add_new_table_button {
     float: left;
-}
+}player.player_id
 
 
 #seats_table_container{
-	position: fixed;
-    bottom: 22px;
-	width: 100%;
-	height: auto;
-	z-index:99;
+	
 }
+
+#seats_table_container tr,{
+	
+}
+
 #seats_table {
     width: 97%;
 	margin:0 auto;
@@ -280,59 +281,15 @@ html {
 	line-height: 40px;
 	margin: 5px 25px;
 }
-#balance_label{
+.balance_label{
 	padding: 5px;
 	color: #fafaf;
-	width: 300px;
+	width: 60%;
 	margin: 0 auto;
 }
 
-#acct_bal{
+.acct_bal{
 	font-weight: bold;
-}
-
-.player_tab {
-    width: 90%;
-    height: 55px;
-    margin: 0 auto;
-    padding: 5px;
-    font-size: 22px;
-	opacity: 0.9;
-	/**
-    -moz-border-radius-bottomleft: 0;
-    -moz-border-radius-bottomright: 0;
-    -webkit-border-radius-bottomleft: 0px;
-    -webkit-border-radius-bottomright: 0px; */
-}
-
-
-
-
-.player_tab_name{
-    width: 100%
-	font-weight: 12px;
-	text-align: center;
-}
-
-
-
-.player_card{
-	height: 100%;
-	width: 20px;
-	margin: 2px;
-}
-
-
-.player_tab_cards{
-	
-	width: 100%;
-	overflow-auto;
-	
-}
-
-.player_tab.current_turn{
-	background-color: #eee !important;
-	color: #333;
 }
 
 
@@ -354,7 +311,9 @@ html {
 #toolbar_right{
 	height; auto;
 	width: 25px;
+/*
 	background: url("/static/images/toolbar_right.png") no-repeat;
+*/
     position: absolute;
     right: 0;
     top: 0;
@@ -365,13 +324,17 @@ html {
 #toolbar_left{
     height; auto;
     float:left;
-    background: url("/static/images/toolbar_left.png") no-repeat;
+  /*
+  background: url("/static/images/toolbar_left.png") no-repeat;
+*/
     height: inherit;
     width: 25px;
 }
 #toolbar_inner{
     height; auto;
-    background: url("/static/images/toolbar_bg.png") repeat-x;
+  /*
+  background: url("/static/images/toolbar_bg.png") repeat-x;
+*/
     width: 97%;
     height:inherit;
 	margin: 6px 0 0 25px;
@@ -403,4 +366,59 @@ html {
 	margin-left: 20%;
 	display: inline-block;
 }
+#player_board {
+    height: 25%;
+	margin-top: 10px;
+    text-align: center;
+	}
+.player_cards{
+	height: 50%;
+}
+.player_slot{
+    width: 19%;
+	display: inline-block;
+	height: 100%;	
+}
 
+.player_tab {
+    width: 90%;
+    margin: 10px auto;
+    padding: 5px;
+    font-size: 22px;
+    opacity: 0.9;
+	height: 29%;
+	
+    /**
+     * 
+    -moz-border-radius-bottomleft: 0;
+    -moz-border-radius-bottomright: 0;
+    -webkit-border-radius-bottomleft: 0px;
+    -webkit-border-radius-bottomright: 0px; */
+}
+
+.player_tab_name{
+    width: 100%
+    font-weight: 12px;
+    text-align: center;
+}
+
+
+
+.player_card{
+    height: 100%;
+    width: 20px;
+    margin: 2px;
+}
+
+
+.player_tab_cards{
+    
+    width: 100%;
+    overflow-auto;
+    
+}
+
+.player_tab.current_turn{
+    background-color: #eee !important;
+    color: #333;
+}

@@ -69,7 +69,7 @@ function init(table_id){
     server.connect();
     app.server = server;
     $('#new_table_form').hide()
-    app.server.game.fetch_cards()
+    
     
 }
 
@@ -141,11 +141,10 @@ function Game(table_id){
         type: 'GET',
         success: function(response){
             var game_data = response.data.game_data;
-            self.update_game(game_data);
             if (game_data.dealer_up_cards) {
                 self.init_dealer(game_data.dealer_up_cards);
             }
-            
+            self.update_game(game_data);
             
         }
     });
@@ -156,7 +155,6 @@ function Game(table_id){
     }
     
     this.update_game = function(game_data){
-        ///this.update_dealer(game_data.dealer_up_cards);
         this.update_game_state(game_data.game_state);
         this.update_players(game_data.seats);
         
@@ -188,9 +186,12 @@ function Game(table_id){
     
     
     this.update_players = function(player_data){
+		this.players = player_data;
         for (var i = 0; i < player_data.length; i++) {
             var player = player_data[i];
             var tab = $("#player_tab_pos_{0}".strFormat(player.position));
+			
+					
             if (player.player_id == player_id && player.available_actions) {
                 app.server.game.update_available_actions(player.available_actions)
             }
@@ -202,11 +203,28 @@ function Game(table_id){
                 else {
                     tab.removeClass('current_turn');
                 }
+                
             }
+            
             else {
                 tab.html('Empty Seat');
                 tab.removeClass('current_turn');
             }
+			if (player_id != player.player_id){
+				var player_position = self.get_position_from_player_id(player.player_id)
+				var current_cards = $("#player_cards_pos_{0} .card_slot".strFormat(player_position));
+			}
+			else{
+				var current_cards = $("#cards .card_slot");
+			}
+            if (player.cards && !self.pending_cards.length  && !current_cards.length) {
+                for (var j = 0; j < player.cards.length; j++) {
+                    var card = player.cards[j];
+                    card.dealt_to = player.player_id;
+                    this.deal_card(card, true);
+                }
+            }
+            
         }
         if (!$('.current_turn').length && self.game_state == 'playing' && player_data.length > 1) {
             $("#option_panel").effect("highlight", {}, 2500)
@@ -222,48 +240,39 @@ function Game(table_id){
         html += "</span>"
         if (player.player_id == player_id) {
         
-            html += "<div id='balance_label'>";
-            html += "<span id='acct_bal'>{0}</span> BTC".strFormat(curr_bal);
+            html += "<div class='balance_label'>";
+            html += "<span class='acct_bal'>{0}</span> BTC".strFormat(curr_bal);
             html += "<div>";
         }
-        html += "<div class='player_tab_cards'>";
-        if (player.cards) {
-            for (var i = 0; i < player.cards.length; i++) {
-                var img_class = 'player_card';
-                
-                html += "<img class='player_card' src='{0} />".strFormat(player.cards[i].image_url);
-            }
-        }
-        html += "</div>";
-        html += "</span>";
+        
         return html
         
     }
     
     this.deal_card_animate = function(card_data){
-	
-		self.pending_cards.push(card_data);
-		if (!DEAL_ANIMATION_INTERVAL) {
-			DEAL_ANIMATION_INTERVAL = setInterval(function(){
-				card = self.pending_cards.shift();
-				if (card) {
-					self.deal_card(card, true)
-				}
-				else {
-					clearInterval(DEAL_ANIMATION_INTERVAL);
-					DEAL_ANIMATION_INTERVAL = null;
-				}
-				
-			}, CARD_ANIMATION_DELAY);
-		}
-	}        
+    
+        self.pending_cards.push(card_data);
+        if (!DEAL_ANIMATION_INTERVAL) {
+            DEAL_ANIMATION_INTERVAL = setInterval(function(){
+                card = self.pending_cards.shift();
+                if (card) {
+                    self.deal_card(card, true)
+                }
+                else {
+                    clearInterval(DEAL_ANIMATION_INTERVAL);
+                    DEAL_ANIMATION_INTERVAL = null;
+                }
+                
+            }, CARD_ANIMATION_DELAY);
+        }
+    }
     
     this.deal_card = function(card_data, skip_animation){
-		
-		if(!skip_animation){
-			return this.deal_card_animate(card_data)
-		}
     
+        if (!skip_animation) {
+            return this.deal_card_animate(card_data)
+        }
+        
         if (card_data.dealt_to == 'dealer') {
             if (card_data.name == null) {
                 $('#dealer_cards').prepend(this.get_card_html(card_data))
@@ -284,7 +293,12 @@ function Game(table_id){
                 }
                 
             }
-        
+			else{
+				 var position = this.get_position_from_player_id(card_data.dealt_to);
+			     $("#player_cards_pos_{0}".strFormat(position)).append(this.get_card_html(card_data));	
+			}
+            
+                
         console.log('Successfully dealt: ' + card_data.name)
         self.last_card_dealt = new Date().getTime();
     }
@@ -296,7 +310,14 @@ function Game(table_id){
     }
     
     this.flip_down_card = function(card_data){
-		debugger;
+        if (this.pending_cards.length) {
+            setTimeout(function(card_cata){
+                return function(){
+                    app.server.game.flip_down_card(card_data)
+                }
+            }(card_data), (this.pending_cards.length + 1) * CARD_ANIMATION_DELAY)
+        }
+        
         $("#down_card").html('<img src="{0}" style="height:100%;" /></div>'.strFormat(card_data.image_url))
     }
     
@@ -319,25 +340,6 @@ function Game(table_id){
         app.server.game.current_balance = new_balance;
     }
     
-    this.fetch_cards = function(){
-        $.ajax({
-            url: '/btcserver/blackjack/cards/',
-            headers: {
-                'Accept': 'application/json'
-            },
-            type: 'GET',
-            success: function(response){
-                var cards = response.data.cards;
-                if (cards.length) {
-                    for (var i = 0; i < cards.length; i++) {
-                        card = cards[i];
-                        card.dealt_to = app.server.game.player_id
-                        self.deal_card(card, true);
-                    }
-                }
-            }
-        });
-    }
     this.send_action = function(action, amount, callback){
         var data = {}
         var callback = callback || noop;
@@ -379,11 +381,18 @@ function Game(table_id){
         }
     }
     
-    
+    this.get_position_from_player_id = function(player_id){
+		for (var i=0;i<this.players.length;i++){
+			if (this.players[i].player_id == player_id){
+				return this.players[i].position;
+			}
+		}
+	}
 }
 
 function bet_button_handler(){
     $('#dealer_cards').html('')
+	$('.player_cards').html('')
     $('#player_panel .card').remove()
     app.server.game.send_action('bet', $('#bid_input').val(), bet_callback)
 }
@@ -407,13 +416,12 @@ function tool_bar_alert(msg, error){
         options.color = "#ff0000"
     }
     var label = $("#message_bar");
-    var old_html = label.html()
     label.html(msg)
-    setTimeout(function(label, old_html){
+    setTimeout(function(label){
         return function(){
-            label.html(old_html);
+            label.html('');
         }
-    }(label, old_html), 2500)
+    }(label), 2500)
     
 }
 

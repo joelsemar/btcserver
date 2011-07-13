@@ -115,11 +115,16 @@ class BlackJackTableHandler(BaseHandler):
         try:
             current_seat = [s for s in seats if s.player == player][0]
         except IndexError:
-            return response.send()
+            return response.send(errors="You aren't sitting at that table!")
         current_seat.player = None
         current_seat.save()
+        if not table.num_players:
+            table.delete()
+            return response.send()
+        
         if table.current_turn == current_seat:
             table.next_turn()
+        
         table.update_game()
         
         return response.send()
@@ -173,11 +178,19 @@ class PlayerActionHandler(BaseHandler):
     
     def bet(self, request, response, player, table):
         amount = request.POST.get('amount')
+        
         try:
-            if  Decimal(amount) > player.balance:
-                return response.send(errors="Insufficient funds", status=500)
+            amount = Decimal(amount)
         except (InvalidOperation, TypeError):
             return response.send(errors="Invalid Amount", status=505)
+        
+        if  amount > player.balance:
+            return response.send(errors="Insufficient funds", status=500)
+        if amount > table.type.high_bet:
+            return response.send(errors="Maximum bet is %s" % table.type.high_bet, status=505)
+        elif amount < table.type.low_bet:
+            return response.send(errors="Minimum bet is %s" % table.type.high_low, status=505)
+        
         
         round = table.current_round
         if round and round.taking_bets:
@@ -188,7 +201,7 @@ class PlayerActionHandler(BaseHandler):
                 BlackJackHand.objects.create(player=player, round=round, bet=amount)
                 return response.send()
             
-        return response.send(status=500)
+        return response.send(errors="This table is no longer taking bets", status=500)
     
     def hit(self, request, response, player, table):
         available_actions = ['hit', 'stand']
@@ -208,7 +221,6 @@ class PlayerActionHandler(BaseHandler):
             if not current_hand:
                 table.next_turn()
         
-        current_hand.set_available_actions(available_actions)
         response.set(available_actions=available_actions)
         
         return response.send()

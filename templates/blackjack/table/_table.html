@@ -53,15 +53,17 @@
 
     
 	
-<div id='seats_table_container'>
-    <table id="seats_table">
-        <tr>
+<div id='player_board'>
             {% for seat in table.seats %}
-            <td>
+			<div class='player_slot'>
+            	<div class="player_cards" id="player_cards_pos_{{seat.position}}"></div>
                 <div class='player_tab base_container' id="player_tab_pos_{{seat.position}}">
+                	<div class="player_tab_name">Empty Seat</div>
+					<div class='balance_label'>
+						<div class='acct_bal'></div>
+					</div>
+					
                 </div>
-            </td>
+			</div>
             {% endfor %}
-        </tr>
-    </table>
 </div>
