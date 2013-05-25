@@ -48,8 +48,8 @@ USE_L10N = True
 
 import sys
 import os
-MEDIA_ROOT = os.path.join(sys.path[0], 'static')
-MEDIA_URL = '/static/' 
+STATIC_ROOT = os.path.join(sys.path[0], 'static')
+STATIC_URL = '/static/' 
 
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
@@ -82,6 +82,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
     'django.core.context_processors.request',
     'django.core.context_processors.media',
+    'django.core.context_processors.static',
     'backend.context_processors.base',
 )
 
@@ -107,6 +108,8 @@ INSTALLED_APPS = (
     'backend',
     'piston',
     'blackjack',
+    'services',
+    'django_extensions',
 )
 
 
